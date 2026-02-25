@@ -92,6 +92,7 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
   const router = useRouter();
   const [liking, setLiking] = useState(false);
   const [messaging, setMessaging] = useState(false);
+  const [matchOpen, setMatchOpen] = useState(false);
 
   const photos = (user.photoURLs?.length ? user.photoURLs : user.profileImageURL ? [user.profileImageURL] : []);
 
@@ -102,6 +103,7 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
       const isMatch = await likeUser(uid, user.id);
       if (isMatch) {
         toast.success(`It's a match with ${user.name}!`);
+        setMatchOpen(true);
       } else {
         toast.success(`You liked ${user.name}!`);
       }
@@ -126,7 +128,23 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
     }
   }
 
+  async function handleStartChat() {
+    if (!uid) return;
+    setMessaging(true);
+    try {
+      const convoId = await ensureConversation(uid, user.id);
+      setMatchOpen(false);
+      onClose();
+      router.push(`/messages/${convoId}`);
+    } catch {
+      toast.error("Failed to open conversation");
+    } finally {
+      setMessaging(false);
+    }
+  }
+
   return (
+    <>
     <Dialog.Root open onOpenChange={(open) => { if (!open) onClose(); }}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
@@ -180,6 +198,30 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
+    {matchOpen && (
+      <MatchPrompt
+        name={user.name}
+        onStart={handleStartChat}
+        onClose={() => setMatchOpen(false)}
+        loading={messaging}
+      />
+    )}
+    </>
+  );
+}
+
+function MatchPrompt({ name, onStart, onClose, loading }: { name: string; onStart: () => void; onClose: () => void; loading: boolean }) {
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 text-center">
+        <h3 className="text-2xl font-black mb-2">It&apos;s a match!</h3>
+        <p className="text-sm text-gray-600 mb-6">Start a chat with {name}?</p>
+        <div className="flex gap-2">
+          <Button variant="secondary" className="flex-1" onClick={onClose}>Maybe later</Button>
+          <Button className="flex-1" onClick={onStart} loading={loading}>Start chat</Button>
+        </div>
+      </div>
+    </div>
   );
 }
 
