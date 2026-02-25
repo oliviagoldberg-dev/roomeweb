@@ -120,7 +120,7 @@ export function SavedListingCard({ listing, folders, onFolderChange }: SavedList
   const priceBgClass = displayRent != null ? "bg-roome-core/10" : "bg-roome-core/30";
 
   return (
-    <>
+    <div className="space-y-0">
       <div className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-2">
         <div className="flex items-center gap-2 flex-wrap">
           <Badge color="blue" className="text-[11px]">{priceLabel}</Badge>
@@ -320,6 +320,6 @@ export function SavedListingCard({ listing, folders, onFolderChange }: SavedList
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

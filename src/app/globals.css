@@ -5,6 +5,8 @@
 :root {
   --background: #F9F8F6;
   --foreground: #0A0A0A;
+  --font-heading: "Roboto", system-ui, sans-serif;
+  --font-body: "Roboto", system-ui, sans-serif;
 }
 
 @layer base {
