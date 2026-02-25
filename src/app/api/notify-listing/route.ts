@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 function matchListingToUser(listing: any, user: any): boolean {
   if (!user?.onboardingComplete) return false;
@@ -36,6 +36,7 @@ function matchListingToUser(listing: any, user: any): boolean {
 
 export async function POST(req: Request) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
     const { listingId } = await req.json();
     if (!listingId) return NextResponse.json({ error: "Missing listingId" }, { status: 400 });
 
