@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useBrowseUsers } from "@/hooks/useBrowseUsers";
 import { useAuthStore } from "@/store/authStore";
 import { useUiStore } from "@/store/uiStore";
@@ -12,6 +13,7 @@ import { RoommateUser } from "@/types/user";
 import { Search, SlidersHorizontal } from "lucide-react";
 
 export default function BrowsePage() {
+  const router = useRouter();
   const { users, loading } = useBrowseUsers();
   const { roommateUser } = useAuthStore();
   const { filters } = useUiStore();
@@ -42,8 +44,16 @@ export default function BrowsePage() {
       </div>
 
       {!roommateUser?.city && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 text-sm text-yellow-800 mb-4">
-          Complete your profile to browse roommates in your city.
+        <div className="bg-white rounded-2xl p-4 text-sm text-gray-600 mb-4 shadow-sm border border-gray-100 flex items-center justify-between gap-3">
+          <span>Complete your profile to browse roommates in your city.</span>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => router.push("/profile/edit")}
+            className="inline-flex items-center justify-center"
+          >
+            Complete Profile
+          </Button>
         </div>
       )}
 

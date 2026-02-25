@@ -1,8 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
-import { Trash2, Share2 } from "lucide-react";
-import { deleteSavedListing, sendMessage, ensureConversation } from "@/lib/firebase/firestore";
+import { Trash2, Share2, Folder } from "lucide-react";
+import { deleteSavedListing, sendMessage, ensureConversation, updateListingFolder } from "@/lib/firebase/firestore";
 import { useAuthStore } from "@/store/authStore";
 import { useConversations } from "@/hooks/useConversations";
 import { SavedListing } from "@/types/listings";
@@ -12,18 +12,23 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Avatar } from "@/components/ui/Avatar";
 import { useRouter } from "next/navigation";
 import { formatSourceLabel } from "@/lib/utils/formatSource";
+import type { ListingFolder } from "@/types/folders";
 
 interface SavedListingCardProps {
   listing: SavedListing;
+  folders: ListingFolder[];
+  onFolderChange?: (id: string, folderId: string | null) => void;
 }
 
-export function SavedListingCard({ listing }: SavedListingCardProps) {
+export function SavedListingCard({ listing, folders, onFolderChange }: SavedListingCardProps) {
   const router = useRouter();
   const { uid } = useAuthStore();
   const { convos } = useConversations();
   const [shareOpen, setShareOpen] = useState(false);
+  const [moveOpen, setMoveOpen] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [moving, setMoving] = useState(false);
 
   async function handleDelete() {
     setDeleting(true);
@@ -56,6 +61,17 @@ export function SavedListingCard({ listing }: SavedListingCardProps) {
       toast.error("Failed to share");
     } finally {
       setSharing(false);
+    }
+  }
+
+  async function moveToFolder(folderId: string | null) {
+    setMoving(true);
+    try {
+      await updateListingFolder(listing.id, folderId);
+      onFolderChange?.(listing.id, folderId);
+      setMoveOpen(false);
+    } finally {
+      setMoving(false);
     }
   }
 
@@ -172,41 +188,53 @@ export function SavedListingCard({ listing }: SavedListingCardProps) {
               </Dialog.Content>
             </Dialog.Portal>
           </Dialog.Root>
+          <Dialog.Root open={moveOpen} onOpenChange={setMoveOpen}>
+            <Dialog.Trigger asChild>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="inline-flex items-center justify-center gap-2"
+              >
+                <Folder className="w-3.5 h-3.5" />
+                Move
+              </Button>
+            </Dialog.Trigger>
+            <Dialog.Portal>
+              <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
+              <Dialog.Content className="fixed inset-x-4 top-1/4 sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-sm bg-white rounded-3xl shadow-2xl z-50 p-6">
+                <Dialog.Title className="font-bold text-lg mb-4">Move to Folder</Dialog.Title>
+                <div className="space-y-2 max-h-72 overflow-y-auto">
+                  <button
+                    onClick={() => moveToFolder(null)}
+                    disabled={moving}
+                    className="w-full text-left p-3 rounded-2xl hover:bg-gray-50 transition-colors"
+                  >
+                    No folder
+                  </button>
+                  {folders.map((f) => (
+                    <button
+                      key={f.id}
+                      onClick={() => moveToFolder(f.id)}
+                      disabled={moving}
+                      className={`w-full text-left p-3 rounded-2xl transition-colors ${
+                        listing.folderId === f.id ? "bg-roome-core/10" : "hover:bg-gray-50"
+                      }`}
+                    >
+                      {f.name}
+                    </button>
+                  ))}
+                </div>
+                <Dialog.Close asChild>
+                  <Button variant="secondary" className="w-full mt-4">Cancel</Button>
+                </Dialog.Close>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
           <Button variant="danger" size="sm" onClick={handleDelete} loading={deleting}>
             <Trash2 className="w-3.5 h-3.5" />
           </Button>
         </div>
       </div>
-
-      {/* Share to chat dialog */}
-      <Dialog.Root open={shareOpen} onOpenChange={setShareOpen}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content className="fixed inset-x-4 top-1/4 sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-sm bg-white rounded-3xl shadow-2xl z-50 p-6">
-            <Dialog.Title className="font-bold text-lg mb-4">Share to Chat</Dialog.Title>
-            {convos.length === 0 ? (
-              <p className="text-gray-400 text-sm text-center py-4">No conversations yet.</p>
-            ) : (
-              <div className="space-y-2 max-h-72 overflow-y-auto">
-                {convos.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => shareToConvo(c.otherUserUid ?? "", c.otherUserName ?? "")}
-                    disabled={sharing}
-                    className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-gray-50 transition-colors text-left"
-                  >
-                    <Avatar src={c.otherUserPhoto} name={c.otherUserName ?? "?"} size={40} />
-                    <p className="font-medium">{c.otherUserName}</p>
-                  </button>
-                ))}
-              </div>
-            )}
-            <Dialog.Close asChild>
-              <Button variant="secondary" className="w-full mt-4">Cancel</Button>
-            </Dialog.Close>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
     </div>
   );
 }

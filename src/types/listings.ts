@@ -19,6 +19,7 @@ export interface SavedListing {
   photoURLs?: string[];
   notes?: string;
   createdAt?: string;
+  folderId?: string | null;
 }
 
 export interface LinkPreviewResult {

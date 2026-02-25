@@ -22,9 +22,10 @@ const AMENITIES_OPTIONS = ["AC", "In-unit Laundry", "Parking", "Dishwasher", "Gy
 interface AddListingModalProps {
   open: boolean;
   onClose: () => void;
+  defaultFolderId?: string | null;
 }
 
-export function AddListingModal({ open, onClose }: AddListingModalProps) {
+export function AddListingModal({ open, onClose, defaultFolderId }: AddListingModalProps) {
   const { uid } = useAuthStore();
   const { user } = useCurrentUser();
   const [tab, setTab] = useState<"url" | "manual">("url");
@@ -82,6 +83,7 @@ export function AddListingModal({ open, onClose }: AddListingModalProps) {
         city: user?.city ?? "",
         neighborhood: user?.neighborhood ?? "",
         rent: preview.rent ?? undefined,
+        folderId: defaultFolderId ?? null,
       } as Omit<SavedListing, "id">);
       toast.success("Listing saved!");
       handleClose();
@@ -121,6 +123,7 @@ export function AddListingModal({ open, onClose }: AddListingModalProps) {
         amenities,
         photoURLs,
         notes,
+        folderId: defaultFolderId ?? null,
       } as Omit<SavedListing, "id">);
       toast.success("Listing posted!");
       handleClose();

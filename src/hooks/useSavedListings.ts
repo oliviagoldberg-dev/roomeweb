@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { listenToSavedListings } from "@/lib/firebase/firestore";
+import { listenToListingsForUser } from "@/lib/firebase/firestore";
 import { useAuthStore } from "@/store/authStore";
 import { SavedListing } from "@/types/listings";
 
@@ -12,7 +12,7 @@ export function useSavedListings() {
   useEffect(() => {
     if (!uid) { setLoading(false); return; }
 
-    const unsub = listenToSavedListings(uid, (rows) => {
+    const unsub = listenToListingsForUser(uid, (rows) => {
       setListings(rows as SavedListing[]);
       setLoading(false);
     });
