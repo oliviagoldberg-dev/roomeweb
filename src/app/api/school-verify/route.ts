@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 export async function POST(req: Request) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
     const { userId, schoolEmail } = await req.json();
     if (!userId || !schoolEmail) {
       return NextResponse.json({ error: "Missing data" }, { status: 400 });
