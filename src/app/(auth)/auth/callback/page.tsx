@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { getUser } from "@/lib/firebase/firestore";
@@ -8,7 +8,7 @@ import { useAuthStore } from "@/store/authStore";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { RoommateUser } from "@/types/user";
 
-export default function AuthCallbackPage() {
+function AuthCallbackClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setFirebaseUser, setRoommateUser } = useAuthStore();
@@ -48,5 +48,18 @@ export default function AuthCallbackPage() {
       <LoadingSpinner />
       <p className="text-sm text-gray-600">{message}</p>
     </div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-4 text-center">
+        <LoadingSpinner />
+        <p className="text-sm text-gray-600">Confirming your email...</p>
+      </div>
+    }>
+      <AuthCallbackClient />
+    </Suspense>
   );
 }
