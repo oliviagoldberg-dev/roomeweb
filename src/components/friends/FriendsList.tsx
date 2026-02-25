@@ -1,0 +1,176 @@
+"use client";
+import { useState } from "react";
+import toast from "react-hot-toast";
+import { useFriends } from "@/hooks/useFriends";
+import { useFriendRequests } from "@/hooks/useFriendRequests";
+import { useAuthStore } from "@/store/authStore";
+import {
+  searchUsersByUsername,
+  sendFriendRequest,
+  acceptFriendRequest,
+  declineFriendRequest,
+  getOrCreateInviteCode,
+} from "@/lib/firebase/firestore";
+import { FriendRequestCard } from "./FriendRequestCard";
+import { InviteModal } from "./InviteModal";
+import { Avatar } from "@/components/ui/Avatar";
+import { Button } from "@/components/ui/Button";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Search, UserPlus } from "lucide-react";
+
+interface UserResult {
+  id: string;
+  username: string;
+  name: string;
+  profileImageURL?: string;
+}
+
+export function FriendsList() {
+  const { uid } = useAuthStore();
+  const { friends, loading } = useFriends();
+  const { requests } = useFriendRequests();
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState<UserResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [sentTo, setSentTo] = useState<Set<string>>(new Set());
+  const [inviteCode, setInviteCode] = useState("");
+  const [inviteOpen, setInviteOpen] = useState(false);
+
+  function handleSearch(val: string) {
+    setSearch(val);
+    if (val.length < 3) { setResults([]); return; }
+    setSearching(true);
+    const unsub = searchUsersByUsername(val, uid ?? "", (data) => {
+      setResults(data as UserResult[]);
+      setSearching(false);
+      unsub();
+    });
+  }
+
+  async function handleSendRequest(user: UserResult) {
+    if (!uid) return;
+    await sendFriendRequest(uid, user.id);
+    setSentTo((s) => new Set(s).add(user.id));
+    toast.success(`Friend request sent to ${user.name || user.username}!`);
+  }
+
+  async function handleAccept(requestId: string, fromUID: string) {
+    if (!uid) return;
+    await acceptFriendRequest(requestId, uid, fromUID);
+    toast.success("Friend request accepted!");
+  }
+
+  async function handleDecline(requestId: string) {
+    await declineFriendRequest(requestId);
+  }
+
+  async function handleInvite() {
+    if (!uid) {
+      toast.error("Please sign in to invite friends.");
+      return;
+    }
+    setInviteCode("");
+    setInviteOpen(true);
+    try {
+      const code = await getOrCreateInviteCode(uid);
+      setInviteCode(code);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to generate invite code");
+      setInviteOpen(false);
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Search + Invite */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <input
+            value={search}
+            onChange={(e) => handleSearch(e.target.value)}
+            placeholder="Search by username…"
+            className="w-full pl-9 pr-4 py-3 bg-white rounded-2xl border border-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-roome-core/40 text-sm"
+          />
+        </div>
+        <Button
+          size="sm"
+          onClick={handleInvite}
+          className="inline-flex items-center gap-2 bg-[#38b6ff] hover:bg-[#2ea6f0] text-white"
+        >
+          <UserPlus className="w-4 h-4" />
+          Invite
+        </Button>
+      </div>
+
+      {/* Search results */}
+      {searching && <div className="flex justify-center"><LoadingSpinner /></div>}
+      {search.length >= 3 && !searching && results.length === 0 && (
+        <p className="text-center text-gray-400 text-sm">No users found</p>
+      )}
+      {results.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm divide-y divide-gray-50">
+          {results.map((u) => (
+            <div key={u.id} className="flex items-center gap-3 p-4">
+              <Avatar src={u.profileImageURL} name={u.name || u.username} size={44} />
+              <div className="flex-1">
+                <p className="font-semibold">{u.name || u.username}</p>
+                <p className="text-sm text-gray-400">@{u.username}</p>
+              </div>
+              <Button
+                size="sm"
+                variant={sentTo.has(u.id) ? "secondary" : "primary"}
+                disabled={sentTo.has(u.id)}
+                onClick={() => handleSendRequest(u)}
+              >
+                {sentTo.has(u.id) ? "Sent ✓" : "Add"}
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Pending requests */}
+      {requests.length > 0 && search.length < 3 && (
+        <div className="space-y-3">
+          <h2 className="font-semibold text-gray-700">Friend Requests</h2>
+          {requests.map((r) => (
+            <FriendRequestCard
+              key={r.id}
+              request={r}
+              onAccept={() => handleAccept(r.id, r.fromUID)}
+              onDecline={() => handleDecline(r.id)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Friends list */}
+      {search.length < 3 && (
+        <div className="space-y-3">
+          <h2 className="font-semibold text-gray-700">My Friends ({friends.length})</h2>
+          {loading ? (
+            <div className="flex justify-center py-4"><LoadingSpinner /></div>
+          ) : friends.length === 0 ? (
+            <p className="text-gray-400 text-sm">No friends yet — invite someone!</p>
+          ) : (
+            <div className="bg-white rounded-2xl shadow-sm divide-y divide-gray-50">
+              {friends.map((f) => (
+                <div key={f.id} className="flex items-center gap-3 p-4">
+                  <Avatar src={f.profileImageURL} name={f.name} size={52} />
+                  <div>
+                    <p className="font-semibold">{f.name}</p>
+                    <p className="text-sm text-gray-400">@{f.username}</p>
+                    {f.occupation && <p className="text-xs text-gray-400">{f.occupation}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      <InviteModal open={inviteOpen} code={inviteCode} onClose={() => setInviteOpen(false)} />
+    </div>
+  );
+}

@@ -1,0 +1,72 @@
+"use client";
+import { useState } from "react";
+import { useBrowseUsers } from "@/hooks/useBrowseUsers";
+import { useAuthStore } from "@/store/authStore";
+import { useUiStore } from "@/store/uiStore";
+import { RoommateCard } from "@/components/browse/RoommateCard";
+import { FiltersDrawer } from "@/components/browse/FiltersDrawer";
+import { UserDetailModal } from "@/components/browse/UserDetailModal";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Button } from "@/components/ui/Button";
+import { RoommateUser } from "@/types/user";
+import { Search, SlidersHorizontal } from "lucide-react";
+
+export default function BrowsePage() {
+  const { users, loading } = useBrowseUsers();
+  const { roommateUser } = useAuthStore();
+  const { filters } = useUiStore();
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [selected, setSelected] = useState<RoommateUser | null>(null);
+
+  const filtered = users.filter((u) => {
+    if (u.budgetMax < filters.budgetMin) return false;
+    if (u.budgetMin > filters.budgetMax) return false;
+    if (filters.hasPet !== null && u.hasPet !== filters.hasPet) return false;
+    if (filters.cleanliness !== null && u.cleanliness !== filters.cleanliness) return false;
+    if (filters.sleepSchedule && u.sleepSchedule !== filters.sleepSchedule) return false;
+    return true;
+  });
+
+  return (
+    <div className="max-w-5xl mx-auto px-4 py-6">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-black">Browse Roommates</h1>
+        <Button
+          size="sm"
+          onClick={() => setFiltersOpen(true)}
+          className="inline-flex items-center gap-2 bg-[#38b6ff] hover:bg-[#2ea6f0] text-white"
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+          Filters
+        </Button>
+      </div>
+
+      {!roommateUser?.city && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 text-sm text-yellow-800 mb-4">
+          Complete your profile to browse roommates in your city.
+        </div>
+      )}
+
+      {loading ? (
+        <div className="flex justify-center pt-20"><LoadingSpinner /></div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-20 text-gray-400">
+          <Search className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+          <p className="font-semibold">No roommates found</p>
+          <p className="text-sm">Try adjusting your filters</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map((u) => (
+            <RoommateCard key={u.id} user={u} onClick={() => setSelected(u)} />
+          ))}
+        </div>
+      )}
+
+      <FiltersDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} />
+      {selected && (
+        <UserDetailModal user={selected} onClose={() => setSelected(null)} />
+      )}
+    </div>
+  );
+}
