@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Trash2, Share2 } from "lucide-react";
 import { deleteSavedListing, sendMessage, ensureConversation } from "@/lib/firebase/firestore";
@@ -59,9 +59,30 @@ export function SavedListingCard({ listing }: SavedListingCardProps) {
     }
   }
 
-  const coverPhoto = listing.photoURLs?.[0] ?? listing.imageUrl;
+  const [previewImage, setPreviewImage] = useState("");
+  const coverPhoto = listing.photoURLs?.[0] ?? listing.imageUrl ?? previewImage;
   const isExternal = listing.url && listing.source !== "Manual";
   const sourceLabel = formatSourceLabel(listing.source);
+
+  useEffect(() => {
+    if (coverPhoto || !listing.url) return;
+    let cancelled = false;
+    async function fetchPreviewImage() {
+      try {
+        const res = await fetch("/api/link-preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: listing.url }),
+        });
+        const data = await res.json();
+        if (!cancelled && data?.imageUrl) setPreviewImage(data.imageUrl as string);
+      } catch {
+        // no-op
+      }
+    }
+    void fetchPreviewImage();
+    return () => { cancelled = true; };
+  }, [coverPhoto, listing.url]);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden">

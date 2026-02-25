@@ -22,6 +22,16 @@ function extractTitle(html: string): string {
   return tag ? tag[1].trim() : "";
 }
 
+function normalizeImageUrl(raw: string, baseUrl: string): string {
+  if (!raw) return "";
+  if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+  try {
+    return new URL(raw, baseUrl).toString();
+  } catch {
+    return "";
+  }
+}
+
 function prettifySource(hostname: string): string {
   if (hostname.includes("zillow")) return "Zillow";
   if (hostname.includes("apartments.com")) return "Apartments.com";
@@ -68,7 +78,12 @@ export async function POST(req: Request) {
       extractMeta(html, "og:description") ||
       extractMeta(html, "description") ||
       "Click to view listing";
-    const imageUrl = extractMeta(html, "og:image") || "";
+    const rawImage =
+      extractMeta(html, "og:image:secure_url") ||
+      extractMeta(html, "og:image") ||
+      extractMeta(html, "twitter:image") ||
+      "";
+    const imageUrl = normalizeImageUrl(rawImage, url);
 
     return NextResponse.json({ title, description, imageUrl, source });
   } catch {
