@@ -8,6 +8,9 @@ import { useAuthStore } from "@/store/authStore";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { RoommateUser } from "@/types/user";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function AuthCallbackClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
