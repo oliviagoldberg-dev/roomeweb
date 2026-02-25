@@ -10,11 +10,12 @@ export function useBrowseUsers() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!uid || !roommateUser?.city) { setLoading(false); return; }
+    const city = roommateUser?.city;
+    if (!uid || !city) { setLoading(false); return; }
 
     async function load() {
       const [data, blocked] = await Promise.all([
-        fetchUsersInCity(roommateUser.city, uid),
+        fetchUsersInCity(city, uid),
         listBlockedUsers(uid),
       ]);
       const blockedSet = new Set(blocked);
