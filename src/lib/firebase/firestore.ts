@@ -92,7 +92,7 @@ export async function searchUsersByUsername(prefix: string, currentUid: string, 
     .ilike("username", `${prefix.toLowerCase()}%`)
     .limit(10);
   cb(data ?? []);
-  return () => {};
+  return;
 }
 
 // ─── Like / Match ─────────────────────────────────────────────────────────────

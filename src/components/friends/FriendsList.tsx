@@ -40,10 +40,9 @@ export function FriendsList() {
     setSearch(val);
     if (val.length < 3) { setResults([]); return; }
     setSearching(true);
-    const unsub = searchUsersByUsername(val, uid ?? "", (data) => {
+    void searchUsersByUsername(val, uid ?? "", (data) => {
       setResults(data as UserResult[]);
       setSearching(false);
-      unsub();
     });
   }
 
