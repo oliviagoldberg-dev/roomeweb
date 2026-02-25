@@ -3,7 +3,13 @@ import { supabase } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
 export async function signUp(email: string, password: string, name = "") {
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const emailRedirectTo =
+    typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined;
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: emailRedirectTo ? { emailRedirectTo } : undefined,
+  });
   if (error) throw error;
   const user = data.user;
   if (!user) throw new Error("Failed to create user");

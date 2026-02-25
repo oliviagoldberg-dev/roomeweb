@@ -39,14 +39,14 @@ export function SignupForm() {
     setLoading(true);
     try {
       const fbUser = await signUp(email, password, name);
-      setFirebaseUser(fbUser);
 
       if (trimmedCode) {
         await redeemInviteCode(trimmedCode, fbUser.id);
         toast.success("Invite code applied! You're connected with your friend.");
       }
 
-      router.push("/onboarding");
+      setFirebaseUser(null);
+      router.push("/auth/check-email");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Sign up failed";
       toast.error(msg);
