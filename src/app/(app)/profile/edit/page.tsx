@@ -998,12 +998,6 @@ const JOB_TITLES_BY_INDUSTRY: Record<string, string[]> = {
     "Operations Coordinator",
     "Other",
   ],
-  "Real Estate": [
-    "Real Estate Analyst",
-    "Leasing Consultant",
-    "Property Manager",
-    "Other",
-  ],
   "Property Management": [
     "Property Manager",
     "Leasing Consultant",
