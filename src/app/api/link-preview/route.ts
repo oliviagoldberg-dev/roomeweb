@@ -32,6 +32,28 @@ function normalizeImageUrl(raw: string, baseUrl: string): string {
   }
 }
 
+function extractFirstImage(html: string, hostname: string): string {
+  if (!html) return "";
+  const zillowMatch = html.match(/https:\/\/photos\.zillowstatic\.com\/[^"'\s)]+/i);
+  if (hostname.includes("zillow") && zillowMatch) return zillowMatch[0];
+
+  const genericMatch = html.match(/https?:\/\/[^"'\s)]+\.(?:jpg|jpeg|png|webp)/i);
+  return genericMatch ? genericMatch[0] : "";
+}
+
+async function fetchHtml(url: string): Promise<string> {
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+      "Accept": "text/html,application/xhtml+xml",
+      "Accept-Language": "en-US,en;q=0.9",
+    },
+    redirect: "follow",
+  });
+  if (!res.ok) return "";
+  return await res.text();
+}
+
 function prettifySource(hostname: string): string {
   if (hostname.includes("zillow")) return "Zillow";
   if (hostname.includes("apartments.com")) return "Apartments.com";
@@ -53,16 +75,8 @@ export async function POST(req: Request) {
     const hostname = new URL(url).hostname;
     const source = prettifySource(hostname);
 
-    const res = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
-        "Accept": "text/html,application/xhtml+xml",
-        "Accept-Language": "en-US,en;q=0.9",
-      },
-      redirect: "follow",
-    });
-
-    if (!res.ok) {
+    let html = await fetchHtml(url);
+    if (!html) {
       return NextResponse.json({
         title: "Listing",
         description: "Click to view listing",
@@ -70,8 +84,6 @@ export async function POST(req: Request) {
         source,
       });
     }
-
-    const html = await res.text();
 
     const title = extractTitle(html) || "Listing";
     const description =
@@ -83,7 +95,15 @@ export async function POST(req: Request) {
       extractMeta(html, "og:image") ||
       extractMeta(html, "twitter:image") ||
       "";
-    const imageUrl = normalizeImageUrl(rawImage, url);
+    let imageUrl = normalizeImageUrl(rawImage, url) || extractFirstImage(html, hostname);
+
+    if (!imageUrl) {
+      // Fallback: fetch via jina.ai (helps with some sites like Zillow)
+      const jinaHtml = await fetchHtml(`https://r.jina.ai/http://${url.replace(/^https?:\/\//, "")}`);
+      if (jinaHtml) {
+        imageUrl = extractFirstImage(jinaHtml, hostname);
+      }
+    }
 
     return NextResponse.json({ title, description, imageUrl, source });
   } catch {
