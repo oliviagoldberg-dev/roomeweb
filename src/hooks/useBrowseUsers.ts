@@ -11,18 +11,19 @@ export function useBrowseUsers() {
 
   useEffect(() => {
     const city = roommateUser?.city;
-    if (!uid || !city) { setLoading(false); return; }
+    const uidSafe = uid ?? "";
+    if (!uidSafe || !city) { setLoading(false); return; }
 
-    async function load(citySafe: string) {
+    async function load(citySafe: string, uidSafe: string) {
       const [data, blocked] = await Promise.all([
-        fetchUsersInCity(citySafe, uid),
-        listBlockedUsers(uid),
+        fetchUsersInCity(citySafe, uidSafe),
+        listBlockedUsers(uidSafe),
       ]);
       const blockedSet = new Set(blocked);
       setUsers((data as RoommateUser[]).filter((u) => !blockedSet.has(u.id)));
       setLoading(false);
     }
-    void load(city);
+    void load(city, uidSafe);
   }, [uid, roommateUser?.city]);
 
   return { users, setUsers, loading };
