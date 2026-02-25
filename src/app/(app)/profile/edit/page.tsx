@@ -648,12 +648,7 @@ const JOB_TITLES_BY_INDUSTRY: Record<string, string[]> = {
     "Platform Engineer",
     "Other",
   ],
-  "Product Management": [
-    "Product Manager",
-    "Associate Product Manager",
-    "Product Analyst",
-    "Other",
-  ],
+
   "UX / UI Design": [
     "UX Designer",
     "UI Designer",
