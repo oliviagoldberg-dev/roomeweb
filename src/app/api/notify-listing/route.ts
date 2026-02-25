@@ -3,7 +3,6 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 
 function matchListingToUser(listing: any, user: any): boolean {
   if (!user?.onboardingComplete) return false;
-  if (listing.ownerUid && user.id === listing.ownerUid) return false;
 
   if (listing.city && user.city && listing.city !== user.city) return false;
 
