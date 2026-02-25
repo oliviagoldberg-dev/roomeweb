@@ -26,7 +26,7 @@ const config: Config = {
         foreground: "var(--foreground)",
       },
       fontFamily: {
-        heading: ["var(--font-heading)", "Georgia", "serif"],
+        heading: ["var(--font-heading)", "system-ui", "sans-serif"],
         body:    ["var(--font-body)", "system-ui", "sans-serif"],
         sans:    ["var(--font-body)", "system-ui", "sans-serif"],
       },

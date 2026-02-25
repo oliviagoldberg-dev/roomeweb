@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import { Playfair_Display, DM_Sans } from "next/font/google";
+import { Roboto } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
-const playfair = Playfair_Display({
+const robotoHeading = Roboto({
   subsets: ["latin"],
   variable: "--font-heading",
-  weight: ["400", "700", "900"],
+  weight: ["300", "400", "500", "700", "900"],
 });
 
-const dmSans = DM_Sans({
+const robotoBody = Roboto({
   subsets: ["latin"],
   variable: "--font-body",
-  weight: ["400", "500", "700"],
+  weight: ["300", "400", "500", "700", "900"],
 });
 
 export const metadata: Metadata = {
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${playfair.variable} ${dmSans.variable} font-body antialiased bg-roome-offwhite text-roome-black`}>
+      <body className={`${robotoHeading.variable} ${robotoBody.variable} font-body antialiased bg-roome-offwhite text-roome-black`}>
         {children}
         <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
       </body>
