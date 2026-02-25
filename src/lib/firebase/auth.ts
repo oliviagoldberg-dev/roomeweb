@@ -1,5 +1,6 @@
 "use client";
 import { supabase } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 export async function signUp(email: string, password: string, name = "") {
   const { data, error } = await supabase.auth.signUp({ email, password });
@@ -69,7 +70,7 @@ export async function changePassword(newPassword: string) {
   if (error) throw error;
 }
 
-export function onAuthChanged(callback: (user: { id: string } | null) => void) {
+export function onAuthChanged(callback: (user: User | null) => void) {
   const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
     callback(session?.user ?? null);
   });
