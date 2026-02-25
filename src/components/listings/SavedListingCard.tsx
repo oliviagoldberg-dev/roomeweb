@@ -171,6 +171,7 @@ export function SavedListingCard({ listing, folders, onFolderChange }: SavedList
             <Trash2 className="w-3.5 h-3.5" />
           </Button>
         </div>
+        </div>
       </div>
 
       {shareOpen && (
