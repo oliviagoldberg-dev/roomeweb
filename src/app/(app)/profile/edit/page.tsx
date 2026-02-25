@@ -1752,14 +1752,6 @@ const COMPANIES_BY_INDUSTRY: Record<string, string[]> = {
     "ESPN",
     "Other",
   ],
-  "Real Estate": [
-    "Zillow",
-    "Redfin",
-    "Compass",
-    "CBRE",
-    "JLL",
-    "Other",
-  ],
   Education: [
     "Khan Academy",
     "Coursera",
