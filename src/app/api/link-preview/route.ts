@@ -99,7 +99,8 @@ export async function POST(req: Request) {
 
     if (!imageUrl) {
       // Fallback: fetch via jina.ai (helps with some sites like Zillow)
-      const jinaHtml = await fetchHtml(`https://r.jina.ai/http://${url.replace(/^https?:\/\//, "")}`);
+      const stripped = url.replace(/^https?:\/\//, "");
+      const jinaHtml = await fetchHtml(`https://r.jina.ai/https://${stripped}`);
       if (jinaHtml) {
         imageUrl = extractFirstImage(jinaHtml, hostname);
       }
