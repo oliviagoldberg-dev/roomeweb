@@ -370,7 +370,9 @@ export function listenToNotifications(uid: string, cb: (rows: any[]) => void) {
     .channel(`notifications:${uid}`)
     .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `toUID=eq.${uid}` }, () => fetch())
     .subscribe();
-  return () => supabase.removeChannel(channel);
+  return () => {
+    void supabase.removeChannel(channel);
+  };
 }
 
 // ─── Saved Listings ───────────────────────────────────────────────────────────
