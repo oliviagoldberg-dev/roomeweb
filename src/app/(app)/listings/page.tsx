@@ -8,7 +8,6 @@ import { SavedListingCard } from "@/components/listings/SavedListingCard";
 import { AddListingModal } from "@/components/listings/AddListingModal";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import * as Dialog from "@radix-ui/react-dialog";
 import { Home, FolderPlus, Share2 } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -76,30 +75,15 @@ export default function ListingsPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Dialog.Root open={newFolderOpen} onOpenChange={setNewFolderOpen}>
-            <Dialog.Trigger asChild>
-              <Button size="sm" variant="secondary" className="inline-flex items-center gap-2">
-                <FolderPlus className="w-4 h-4" />
-                New Folder
-              </Button>
-            </Dialog.Trigger>
-            <Dialog.Portal>
-              <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-              <Dialog.Content className="fixed inset-x-4 top-1/4 sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-sm bg-white rounded-3xl shadow-2xl z-50 p-6">
-                <Dialog.Title className="font-bold text-lg mb-4">Create Folder</Dialog.Title>
-                <input
-                  value={newFolderName}
-                  onChange={(e) => setNewFolderName(e.target.value)}
-                  placeholder="e.g. Favorites"
-                  className="w-full px-4 py-3 rounded-2xl bg-roome-offwhite text-roome-black placeholder-gray-400 border border-transparent focus:outline-none focus:ring-2 focus:ring-roome-core/40"
-                />
-                <div className="flex gap-2 mt-4">
-                  <Button variant="secondary" className="flex-1" onClick={() => setNewFolderOpen(false)}>Cancel</Button>
-                  <Button className="flex-1" onClick={handleCreateFolder}>Create</Button>
-                </div>
-              </Dialog.Content>
-            </Dialog.Portal>
-          </Dialog.Root>
+          <Button
+            size="sm"
+            variant="secondary"
+            className="inline-flex items-center gap-2"
+            onClick={() => setNewFolderOpen(true)}
+          >
+            <FolderPlus className="w-4 h-4" />
+            New Folder
+          </Button>
           <Button onClick={() => setAddListingModalOpen(true)} size="sm" className="bg-[#38b6ff] hover:bg-[#2ea6f0] text-white">
             + Add Listing
           </Button>
@@ -125,39 +109,12 @@ export default function ListingsPage() {
             >
               {f.name}
             </button>
-            <Dialog.Root open={shareOpen && shareFolderId === f.id} onOpenChange={(o) => { setShareOpen(o); if (o) setShareFolderId(f.id); }}>
-              <Dialog.Trigger asChild>
-                <button className="p-2 rounded-xl bg-roome-core/10 text-roome-core hover:bg-roome-core/20">
-                  <Share2 className="w-3.5 h-3.5" />
-                </button>
-              </Dialog.Trigger>
-              <Dialog.Portal>
-                <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-                <Dialog.Content className="fixed inset-x-4 top-1/4 sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-sm bg-white rounded-3xl shadow-2xl z-50 p-6">
-                  <Dialog.Title className="font-bold text-lg mb-4">Share Folder</Dialog.Title>
-                  {convos.length === 0 ? (
-                    <p className="text-gray-400 text-sm text-center py-4">No conversations yet.</p>
-                  ) : (
-                    <div className="space-y-2 max-h-72 overflow-y-auto">
-                      {convos.map((c) => (
-                        <button
-                          key={c.id}
-                          onClick={() => shareFolderToConvo(c.id, c.otherUserUid ?? "", c.otherUserName ?? "")}
-                          disabled={sharing}
-                          className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-gray-50 transition-colors text-left"
-                        >
-                          <Avatar src={c.otherUserPhoto} name={c.otherUserName ?? "?"} size={40} />
-                          <p className="font-medium">{c.otherUserName}</p>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  <Dialog.Close asChild>
-                    <Button variant="secondary" className="w-full mt-4">Cancel</Button>
-                  </Dialog.Close>
-                </Dialog.Content>
-              </Dialog.Portal>
-            </Dialog.Root>
+            <button
+              className="p-2 rounded-xl bg-roome-core/10 text-roome-core hover:bg-roome-core/20"
+              onClick={() => { setShareFolderId(f.id); setShareOpen(true); }}
+            >
+              <Share2 className="w-3.5 h-3.5" />
+            </button>
           </div>
         ))}
       </div>
@@ -190,6 +147,50 @@ export default function ListingsPage() {
         onClose={() => setAddListingModalOpen(false)}
         defaultFolderId={favoritesFolderId}
       />
+
+      {newFolderOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6">
+            <h3 className="font-bold text-lg mb-4">Create Folder</h3>
+            <input
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              placeholder="e.g. Favorites"
+              className="w-full px-4 py-3 rounded-2xl bg-roome-offwhite text-roome-black placeholder-gray-400 border border-transparent focus:outline-none focus:ring-2 focus:ring-roome-core/40"
+            />
+            <div className="flex gap-2 mt-4">
+              <Button variant="secondary" className="flex-1" onClick={() => setNewFolderOpen(false)}>Cancel</Button>
+              <Button className="flex-1" onClick={handleCreateFolder}>Create</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {shareOpen && shareFolderId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6">
+            <h3 className="font-bold text-lg mb-4">Share Folder</h3>
+            {convos.length === 0 ? (
+              <p className="text-gray-400 text-sm text-center py-4">No conversations yet.</p>
+            ) : (
+              <div className="space-y-2 max-h-72 overflow-y-auto">
+                {convos.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => shareFolderToConvo(c.id, c.otherUserUid ?? "", c.otherUserName ?? "")}
+                    disabled={sharing}
+                    className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <Avatar src={c.otherUserPhoto} name={c.otherUserName ?? "?"} size={40} />
+                    <p className="font-medium">{c.otherUserName}</p>
+                  </button>
+                ))}
+              </div>
+            )}
+            <Button variant="secondary" className="w-full mt-4" onClick={() => setShareOpen(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
