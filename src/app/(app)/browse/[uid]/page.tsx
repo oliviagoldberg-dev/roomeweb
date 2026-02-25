@@ -37,7 +37,7 @@ export default function UserProfilePage() {
           {user.city && <Badge color="blue">{user.city}</Badge>}
           {user.bio && <p className="text-sm text-gray-700 mt-2">{user.bio}</p>}
           <div className="border-t pt-3 grid grid-cols-2 gap-2 text-sm">
-            <Info label="School" value={user.school} />
+            <Info label="College / University" value={user.university ?? ""} />
             <Info label="Pet" value={user.hasPet ? "Has a pet" : "No pet"} />
           </div>
         </div>
@@ -46,7 +46,7 @@ export default function UserProfilePage() {
   );
 }
 
-function Info({ label, value }: { label: string; value: string }) {
+function Info({ label, value }: { label: string; value?: string }) {
   if (!value) return null;
   return (
     <div>
