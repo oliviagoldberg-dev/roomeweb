@@ -648,7 +648,7 @@ const JOB_TITLES_BY_INDUSTRY: Record<string, string[]> = {
     "Platform Engineer",
     "Other",
   ],
-
+ 
   "UX / UI Design": [
     "UX Designer",
     "UI Designer",
@@ -993,11 +993,7 @@ const JOB_TITLES_BY_INDUSTRY: Record<string, string[]> = {
     "Operations Coordinator",
     "Other",
   ],
-  "Property Management": [
-    "Property Manager",
-    "Leasing Consultant",
-    "Other",
-  ],
+ 
   "Urban Planning": [
     "Urban Planner",
     "Planning Analyst",
@@ -1087,7 +1083,6 @@ const INDUSTRY_OPTIONS = [
   "Data Science",
   "Artificial Intelligence / Machine Learning",
   "Cloud Computing / DevOps",
-  "Product Management",
   "UX / UI Design",
   "QA / Testing",
   "Web Development",
@@ -1263,16 +1258,6 @@ const COMPANIES_BY_INDUSTRY: Record<string, string[]> = {
     "Microsoft Azure",
     "Snowflake",
     "Datadog",
-    "Other",
-  ],
-  "Product Management": [
-    "Google",
-    "Meta",
-    "Amazon",
-    "Microsoft",
-    "Apple",
-    "Stripe",
-    "Airbnb",
     "Other",
   ],
   "UX / UI Design": [
