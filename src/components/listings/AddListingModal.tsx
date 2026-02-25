@@ -75,7 +75,7 @@ export function AddListingModal({ open, onClose, defaultFolderId }: AddListingMo
     if (!uid || !preview) return;
     setSaving(true);
     try {
-      await saveListing(uid, {
+      const listingId = await saveListing(uid, {
         ownerUid: uid,
         url,
         ...preview,
@@ -85,6 +85,11 @@ export function AddListingModal({ open, onClose, defaultFolderId }: AddListingMo
         rent: preview.rent ?? undefined,
         folderId: defaultFolderId ?? null,
       } as Omit<SavedListing, "id">);
+      void fetch("/api/notify-listing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listingId }),
+      });
       toast.success("Listing saved!");
       handleClose();
     } catch {
@@ -105,7 +110,7 @@ export function AddListingModal({ open, onClose, defaultFolderId }: AddListingMo
       if (photoFiles.length) {
         photoURLs = await uploadListingPhotos(uid, photoFiles);
       }
-      await saveListing(uid, {
+      const listingId = await saveListing(uid, {
         ownerUid: uid,
         url: manualUrl,
         title: address.trim(),
@@ -125,6 +130,11 @@ export function AddListingModal({ open, onClose, defaultFolderId }: AddListingMo
         notes,
         folderId: defaultFolderId ?? null,
       } as Omit<SavedListing, "id">);
+      void fetch("/api/notify-listing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listingId }),
+      });
       toast.success("Listing posted!");
       handleClose();
     } catch {
