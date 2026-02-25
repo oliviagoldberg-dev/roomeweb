@@ -422,48 +422,6 @@ export function listenToSavedListings(uid: string, cb: (rows: any[]) => void) {
 }
 
 
-export function listenToListingsForUser(uid: string, cb: (rows: any[]) => void) {
-  const fetch = async () => {
-    const { data: owned } = await supabase
-      .from("listings")
-      .select("*")
-      .eq("ownerUid", uid)
-      .order("createdAt", { ascending: false });
-
-    const { data: shares } = await supabase
-      .from("foldershares")
-      .select("folderId")
-      .eq("sharedWithUid", uid);
-    const sharedIds = (shares ?? []).map((s: any) => s.folderId).filter(Boolean);
-
-    let sharedListings: any[] = [];
-    if (sharedIds.length) {
-      const { data } = await supabase
-        .from("listings")
-        .select("*")
-        .in("folderId", sharedIds)
-        .order("createdAt", { ascending: false });
-      sharedListings = data ?? [];
-    }
-
-    const merged = [...(owned ?? []), ...sharedListings].reduce((acc: any[], row: any) => {
-      if (!acc.find((r) => r.id === row.id)) acc.push(row);
-      return acc;
-    }, []);
-    cb(merged);
-  };
-
-  fetch();
-  const channel = supabase
-    .channel(`listings-shared:${uid}`)
-    .on("postgres_changes", { event: "*", schema: "public", table: "listings" }, () => fetch())
-    .on("postgres_changes", { event: "*", schema: "public", table: "foldershares" }, () => fetch())
-    .subscribe();
-  return () => {
-    void supabase.removeChannel(channel);
-  };
-}
-
 // ─── Listing Folders ─────────────────────────────────────────────────────────
 
 export async function createListingFolder(ownerUid: string, name: string) {
