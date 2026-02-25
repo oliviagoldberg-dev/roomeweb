@@ -81,6 +81,7 @@ export function AddListingModal({ open, onClose }: AddListingModalProps) {
         title: address.trim() || preview.title,
         city: user?.city ?? "",
         neighborhood: user?.neighborhood ?? "",
+        rent: preview.rent ?? undefined,
       } as Omit<SavedListing, "id">);
       toast.success("Listing saved!");
       handleClose();

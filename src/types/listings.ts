@@ -26,4 +26,5 @@ export interface LinkPreviewResult {
   imageUrl: string;
   description: string;
   source: string;
+  rent?: number;
 }

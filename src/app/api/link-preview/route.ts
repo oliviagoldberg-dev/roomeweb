@@ -22,6 +22,32 @@ function extractTitle(html: string): string {
   return tag ? tag[1].trim() : "";
 }
 
+function extractPrice(html: string): number | null {
+  if (!html) return null;
+  const metaPrice =
+    html.match(/property=["']og:price:amount["'][^>]+content=["']([^"']+)["']/i) ||
+    html.match(/itemprop=["']price["'][^>]+content=["']([^"']+)["']/i);
+  if (metaPrice && metaPrice[1]) {
+    const cleaned = metaPrice[1].replace(/[^0-9.]/g, "");
+    const num = Number(cleaned);
+    if (!Number.isNaN(num) && num > 0) return Math.round(num);
+  }
+
+  const dollarMatch = html.match(/\$\s?([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{3,6})/);
+  if (dollarMatch && dollarMatch[1]) {
+    const num = Number(dollarMatch[1].replace(/,/g, ""));
+    if (!Number.isNaN(num)) return num;
+  }
+
+  const jsonMatch = html.match(/"price"\s*:\s*"?([0-9]{3,6})"?/i);
+  if (jsonMatch && jsonMatch[1]) {
+    const num = Number(jsonMatch[1]);
+    if (!Number.isNaN(num)) return num;
+  }
+
+  return null;
+}
+
 function normalizeImageUrl(raw: string, baseUrl: string): string {
   if (!raw) return "";
   if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
@@ -97,16 +123,21 @@ export async function POST(req: Request) {
       "";
     let imageUrl = normalizeImageUrl(rawImage, url) || extractFirstImage(html, hostname);
 
+    let rent = extractPrice(html) ?? undefined;
+
     if (!imageUrl) {
       // Fallback: fetch via jina.ai (helps with some sites like Zillow)
       const stripped = url.replace(/^https?:\/\//, "");
       const jinaHtml = await fetchHtml(`https://r.jina.ai/https://${stripped}`);
       if (jinaHtml) {
         imageUrl = extractFirstImage(jinaHtml, hostname);
+        if (rent == null) {
+          rent = extractPrice(jinaHtml) ?? undefined;
+        }
       }
     }
 
-    return NextResponse.json({ title, description, imageUrl, source });
+    return NextResponse.json({ title, description, imageUrl, source, rent });
   } catch {
     return NextResponse.json({ error: "Failed to fetch preview" }, { status: 500 });
   }

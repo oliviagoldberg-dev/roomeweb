@@ -59,40 +59,25 @@ export function SavedListingCard({ listing }: SavedListingCardProps) {
     }
   }
 
-  const [previewImage, setPreviewImage] = useState("");
-  const coverPhoto = listing.photoURLs?.[0] ?? listing.imageUrl ?? previewImage;
   const isExternal = listing.url && listing.source !== "Manual";
   const sourceLabel = formatSourceLabel(listing.source);
-
-  useEffect(() => {
-    if (coverPhoto || !listing.url) return;
-    let cancelled = false;
-    async function fetchPreviewImage() {
-      try {
-        const res = await fetch("/api/link-preview", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: listing.url }),
-        });
-        const data = await res.json();
-        if (!cancelled && data?.imageUrl) setPreviewImage(data.imageUrl as string);
-      } catch {
-        // no-op
-      }
-    }
-    void fetchPreviewImage();
-    return () => { cancelled = true; };
-  }, [coverPhoto, listing.url]);
+  const priceLabel =
+    listing.rent != null ? `$${listing.rent.toLocaleString()}/mo` : "Rent not set";
+  const priceBgClass = listing.rent != null ? "bg-roome-core/10" : "bg-roome-core/20";
 
   return (
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-      {/* Cover image */}
+      {/* Price banner */}
       {isExternal ? (
         <a href={listing.url} target="_blank" rel="noopener noreferrer">
-          <CoverImage src={coverPhoto} title={listing.title} />
+          <div className={`w-full h-24 ${priceBgClass} flex items-center justify-center`}>
+            <span className="text-roome-black text-lg font-bold">{priceLabel}</span>
+          </div>
         </a>
       ) : (
-        <CoverImage src={coverPhoto} title={listing.title} />
+        <div className={`w-full h-24 ${priceBgClass} flex items-center justify-center`}>
+          <span className="text-roome-black text-lg font-bold">{priceLabel}</span>
+        </div>
       )}
 
       <div className="p-4 space-y-2">
@@ -112,15 +97,10 @@ export function SavedListingCard({ listing }: SavedListingCardProps) {
           <p className="font-semibold text-gray-900 line-clamp-2">{listing.title}</p>
         )}
 
-        {/* Rent */}
-        {listing.rent != null && (
-          <p className="text-roome-core font-bold text-lg">
-            ${listing.rent.toLocaleString()}/mo
-            {listing.utilities != null && (
-              <span className="text-sm font-normal text-gray-400 ml-1">
-                + ${listing.utilities}/mo utilities
-              </span>
-            )}
+        {/* Utilities */}
+        {listing.utilities != null && (
+          <p className="text-sm text-gray-400">
+            + ${listing.utilities}/mo utilities
           </p>
         )}
 
@@ -153,15 +133,45 @@ export function SavedListingCard({ listing }: SavedListingCardProps) {
         )}
 
         <div className="flex gap-2 pt-1">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setShareOpen(true)}
-            className="flex-1 inline-flex items-center justify-center gap-2"
-          >
-            <Share2 className="w-3.5 h-3.5" />
-            Share
-          </Button>
+          <Dialog.Root open={shareOpen} onOpenChange={setShareOpen}>
+            <Dialog.Trigger asChild>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="flex-1 inline-flex items-center justify-center gap-2"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                Share
+              </Button>
+            </Dialog.Trigger>
+            {/* Share to chat dialog */}
+            <Dialog.Portal>
+              <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
+              <Dialog.Content className="fixed inset-x-4 top-1/4 sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-sm bg-white rounded-3xl shadow-2xl z-50 p-6">
+                <Dialog.Title className="font-bold text-lg mb-4">Share to Chat</Dialog.Title>
+                {convos.length === 0 ? (
+                  <p className="text-gray-400 text-sm text-center py-4">No conversations yet.</p>
+                ) : (
+                  <div className="space-y-2 max-h-72 overflow-y-auto">
+                    {convos.map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => shareToConvo(c.otherUserUid ?? "", c.otherUserName ?? "")}
+                        disabled={sharing}
+                        className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-gray-50 transition-colors text-left"
+                      >
+                        <Avatar src={c.otherUserPhoto} name={c.otherUserName ?? "?"} size={40} />
+                        <p className="font-medium">{c.otherUserName}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <Dialog.Close asChild>
+                  <Button variant="secondary" className="w-full mt-4">Cancel</Button>
+                </Dialog.Close>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
           <Button variant="danger" size="sm" onClick={handleDelete} loading={deleting}>
             <Trash2 className="w-3.5 h-3.5" />
           </Button>
@@ -169,7 +179,7 @@ export function SavedListingCard({ listing }: SavedListingCardProps) {
       </div>
 
       {/* Share to chat dialog */}
-      <Dialog.Root open={shareOpen} onOpenChange={(o) => { if (!o) setShareOpen(false); }}>
+      <Dialog.Root open={shareOpen} onOpenChange={setShareOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-4 top-1/4 sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-sm bg-white rounded-3xl shadow-2xl z-50 p-6">
@@ -198,30 +208,5 @@ export function SavedListingCard({ listing }: SavedListingCardProps) {
         </Dialog.Portal>
       </Dialog.Root>
     </div>
-  );
-}
-
-function CoverImage({ src, title }: { src: string; title: string }) {
-  if (!src) {
-    return (
-      <div className="w-full h-40 bg-gradient-to-br from-roome-deep to-roome-core flex items-center justify-center">
-        <span className="text-white text-sm font-medium opacity-60">No photo</span>
-      </div>
-    );
-  }
-  return (
-    <img
-      src={src}
-      alt={title}
-      className="w-full h-40 object-cover"
-      onError={(e) => {
-        const img = e.target as HTMLImageElement;
-        img.style.display = "none";
-        const div = document.createElement("div");
-        div.className = "w-full h-40 bg-gradient-to-br from-roome-deep to-roome-core flex items-center justify-center";
-        div.innerHTML = '<span class="text-white text-sm font-medium opacity-60">No photo</span>';
-        img.parentElement?.insertBefore(div, img);
-      }}
-    />
   );
 }
