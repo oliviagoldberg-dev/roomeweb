@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { fetchUsersInCity } from "@/lib/firebase/firestore";
+import { fetchUsersInCity, listBlockedUsers } from "@/lib/firebase/firestore";
 import { useAuthStore } from "@/store/authStore";
 import { RoommateUser } from "@/types/user";
 
@@ -12,10 +12,16 @@ export function useBrowseUsers() {
   useEffect(() => {
     if (!uid || !roommateUser?.city) { setLoading(false); return; }
 
-    fetchUsersInCity(roommateUser.city, uid).then((data) => {
-      setUsers(data as RoommateUser[]);
+    async function load() {
+      const [data, blocked] = await Promise.all([
+        fetchUsersInCity(roommateUser.city, uid),
+        listBlockedUsers(uid),
+      ]);
+      const blockedSet = new Set(blocked);
+      setUsers((data as RoommateUser[]).filter((u) => !blockedSet.has(u.id)));
       setLoading(false);
-    });
+    }
+    void load();
   }, [uid, roommateUser?.city]);
 
   return { users, setUsers, loading };

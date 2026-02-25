@@ -85,6 +85,40 @@ export async function fetchUsersInCity(city: string, excludeUid: string) {
   return data ?? [];
 }
 
+// ─── Block / Report ───────────────────────────────────────────────────────────
+
+export async function listBlockedUsers(uid: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("blocks")
+    .select("blockedUid")
+    .eq("blockerUid", uid);
+  if (error) return [];
+  return (data ?? []).map((r: any) => r.blockedUid).filter(Boolean);
+}
+
+export async function blockUser(blockerUid: string, blockedUid: string) {
+  const { error } = await supabase
+    .from("blocks")
+    .insert({ blockerUid, blockedUid, createdAt: new Date().toISOString() });
+  if (error) throw error;
+}
+
+export async function unblockUser(blockerUid: string, blockedUid: string) {
+  const { error } = await supabase
+    .from("blocks")
+    .delete()
+    .eq("blockerUid", blockerUid)
+    .eq("blockedUid", blockedUid);
+  if (error) throw error;
+}
+
+export async function reportUser(reporterUid: string, reportedUid: string, reason: string) {
+  const { error } = await supabase
+    .from("reports")
+    .insert({ reporterUid, reportedUid, reason, createdAt: new Date().toISOString() });
+  if (error) throw error;
+}
+
 export async function searchUsersByUsername(prefix: string, currentUid: string, cb: (results: unknown[]) => void) {
   const { data } = await supabase
     .from("profiles")
@@ -455,6 +489,15 @@ export async function listFolderShares(folderId: string) {
     .select("*")
     .eq("folderId", folderId);
   return data ?? [];
+}
+
+export async function deleteListingFolder(folderId: string) {
+  // Remove folder from listings first
+  await supabase.from("listings").update({ folderId: null }).eq("folderId", folderId);
+  // Remove shares, then folder
+  await supabase.from("foldershares").delete().eq("folderId", folderId);
+  const { error } = await supabase.from("listingfolders").delete().eq("id", folderId);
+  if (error) throw error;
 }
 
 export function listenToListingFolders(uid: string, cb: (rows: any[]) => void) {

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import * as Dialog from "@radix-ui/react-dialog";
-import { likeUser, ensureConversation } from "@/lib/firebase/firestore";
+import { likeUser, ensureConversation, blockUser, reportUser } from "@/lib/firebase/firestore";
 import { useAuthStore } from "@/store/authStore";
 import { RoommateUser } from "@/types/user";
 import { Avatar } from "@/components/ui/Avatar";
@@ -114,6 +114,29 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
     }
   }
 
+  async function handleBlock() {
+    if (!uid) return;
+    if (!confirm(`Block ${user.name}? You won't see each other.`)) return;
+    try {
+      await blockUser(uid, user.id);
+      toast.success(`${user.name} blocked`);
+      onClose();
+    } catch {
+      toast.error("Failed to block user");
+    }
+  }
+
+  async function handleReport() {
+    if (!uid) return;
+    const reason = prompt("Report reason (optional):") ?? "";
+    try {
+      await reportUser(uid, user.id, reason);
+      toast.success("Report submitted");
+    } catch {
+      toast.error("Failed to submit report");
+    }
+  }
+
   async function handleMessage() {
     if (!uid) return;
     setMessaging(true);
@@ -193,6 +216,10 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
                 <Heart className="w-4 h-4" />
                 Like
               </Button>
+            </div>
+            <div className="flex items-center justify-between pt-2 text-xs">
+              <button onClick={handleReport} className="text-gray-400 hover:text-gray-600">Report</button>
+              <button onClick={handleBlock} className="text-gray-400 hover:text-gray-600">Block</button>
             </div>
           </div>
         </Dialog.Content>

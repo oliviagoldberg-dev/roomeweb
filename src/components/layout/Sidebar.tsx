@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { signOut } from "@/lib/firebase/auth";
 import { useAuthStore } from "@/store/authStore";
+import { useConversations } from "@/hooks/useConversations";
 import { cn } from "@/lib/utils/cn";
 import { RoomeWordmark } from "@/components/ui/Wordmark";
 
@@ -34,7 +35,9 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { clear } = useAuthStore();
+  const { clear, uid } = useAuthStore();
+  const { convos } = useConversations();
+  const unreadTotal = convos.reduce((sum, c) => sum + (c.unreadCount?.[uid ?? ""] ?? 0), 0);
 
   async function handleSignOut() {
     await signOut();
@@ -50,6 +53,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {NAV.map(({ href, label, Icon }) => {
           const active = pathname.startsWith(href);
+          const showBadge = label === "Messages" && unreadTotal > 0;
           return (
             <Link
               key={href}
@@ -63,7 +67,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               )}
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
-              {label}
+              <span className="flex-1">{label}</span>
+              {showBadge && (
+                <span className="min-w-[18px] h-[18px] bg-white text-roome-core text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                  {unreadTotal}
+                </span>
+              )}
             </Link>
           );
         })}
