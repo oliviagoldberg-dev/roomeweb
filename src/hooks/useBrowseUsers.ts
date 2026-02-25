@@ -13,16 +13,16 @@ export function useBrowseUsers() {
     const city = roommateUser?.city;
     if (!uid || !city) { setLoading(false); return; }
 
-    async function load() {
+    async function load(citySafe: string) {
       const [data, blocked] = await Promise.all([
-        fetchUsersInCity(city, uid),
+        fetchUsersInCity(citySafe, uid),
         listBlockedUsers(uid),
       ]);
       const blockedSet = new Set(blocked);
       setUsers((data as RoommateUser[]).filter((u) => !blockedSet.has(u.id)));
       setLoading(false);
     }
-    void load();
+    void load(city);
   }, [uid, roommateUser?.city]);
 
   return { users, setUsers, loading };
