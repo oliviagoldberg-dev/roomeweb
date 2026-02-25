@@ -42,9 +42,9 @@ export default function ProfilePage() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <StatCard label="Matches" value={user.connections?.length ?? 0} color="text-roome-match" />
-        <StatCard label="Budget Min" value={`$${user.budgetMin}`} color="text-green-600" />
-        <StatCard label="Budget Max" value={`$${user.budgetMax}`} color="text-green-600" />
+        <StatCard label="Friends" value={user.connections?.length ?? 0} color="text-roome-core" />
+        <StatCard label="Budget Min" value={`$${user.budgetMin}`} color="text-roome-core" />
+        <StatCard label="Budget Max" value={`$${user.budgetMax}`} color="text-roome-core" />
       </div>
 
       {/* Details */}
@@ -81,10 +81,10 @@ export default function ProfilePage() {
       {/* Actions */}
       <div className="space-y-4">
         <Link href="/profile/edit" className="block">
-          <Button className="w-full">Edit Profile</Button>
+          <Button variant="secondary" className="w-full">Edit Profile</Button>
         </Link>
         <Link href="/profile/verification" className="block">
-          <Button className="w-full">Verification</Button>
+          <Button variant="secondary" className="w-full">Verification</Button>
         </Link>
         <Button variant="danger" onClick={handleSignOut} className="w-full">
           Found your roommate

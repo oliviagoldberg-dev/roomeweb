@@ -130,28 +130,50 @@ export function FriendsList() {
       )}
 
       {/* Pending requests */}
-      {requests.length > 0 && search.length < 3 && (
+      {search.length < 3 && (
         <div className="space-y-3">
-          <h2 className="font-semibold text-gray-700">Friend Requests</h2>
-          {requests.map((r) => (
-            <FriendRequestCard
-              key={r.id}
-              request={r}
-              onAccept={() => handleAccept(r.id, r.fromUID)}
-              onDecline={() => handleDecline(r.id)}
-            />
-          ))}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-roome-core/10 text-roome-core text-sm font-semibold">
+            Friend Requests
+            <span className="min-w-[18px] h-[18px] bg-roome-core text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+              {requests.length}
+            </span>
+          </div>
+          {requests.length > 0 ? (
+            requests.map((r) => (
+              <FriendRequestCard
+                key={r.id}
+                request={r}
+                onAccept={() => handleAccept(r.id, r.fromUID)}
+                onDecline={() => handleDecline(r.id)}
+              />
+            ))
+          ) : (
+            <p className="text-gray-400 text-sm">No friend requests yet.</p>
+          )}
         </div>
       )}
 
       {/* Friends list */}
       {search.length < 3 && (
         <div className="space-y-3">
-          <h2 className="font-semibold text-gray-700">My Friends ({friends.length})</h2>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-roome-core/10 text-roome-core text-sm font-semibold">
+            My Friends
+            <span className="min-w-[18px] h-[18px] bg-roome-core text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+              {friends.length}
+            </span>
+          </div>
           {loading ? (
             <div className="flex justify-center py-4"><LoadingSpinner /></div>
           ) : friends.length === 0 ? (
-            <p className="text-gray-400 text-sm">No friends yet — invite someone!</p>
+            <div className="bg-white rounded-2xl p-4 text-sm text-gray-600 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-3">
+                <UserPlus className="w-5 h-5 text-gray-400" />
+                <div>
+                  <p className="font-semibold text-gray-800">No friends yet</p>
+                  <p className="text-sm text-gray-500">Invite someone to get started.</p>
+                </div>
+              </div>
+            </div>
           ) : (
             <div className="bg-white rounded-2xl shadow-sm divide-y divide-gray-50">
               {friends.map((f) => (

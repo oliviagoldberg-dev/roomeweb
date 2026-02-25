@@ -59,6 +59,10 @@ export async function ensureProfile(uid: string, email?: string, name?: string) 
       photoURLs: [],
       profileImageURL: "",
       onboardingComplete: false,
+      notifyMatches: true,
+      notifyMessages: true,
+      notifyListings: true,
+      notifyFriendRequests: true,
     }, { onConflict: "id" })
     .select("*")
     .single();
@@ -340,6 +344,22 @@ export async function sendFriendRequest(fromUID: string, toUID: string) {
     status: "pending",
     timestamp: new Date().toISOString(),
   });
+  const { data: prefs } = await supabase
+    .from("profiles")
+    .select("notifyFriendRequests")
+    .eq("id", toUID)
+    .single();
+  if (prefs?.notifyFriendRequests !== false) {
+    await supabase.from("notifications").insert({
+      toUID,
+      fromUID,
+      type: "friend_request",
+      title: "New friend request",
+      body: "Someone sent you a friend request.",
+      read: false,
+      createdAt: new Date().toISOString(),
+    });
+  }
 }
 
 export async function acceptFriendRequest(requestId: string, myUid: string, fromUid: string) {
@@ -472,6 +492,14 @@ export async function updateListingFolder(listingId: string, folderId: string | 
   const { error } = await supabase
     .from("listings")
     .update({ folderId })
+    .eq("id", listingId);
+  if (error) throw error;
+}
+
+export async function updateListing(listingId: string, data: Record<string, unknown>) {
+  const { error } = await supabase
+    .from("listings")
+    .update(data)
     .eq("id", listingId);
   if (error) throw error;
 }

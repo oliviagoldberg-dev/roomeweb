@@ -31,6 +31,7 @@ export default function ProfileEditPage() {
   const [existingPhotos, setExistingPhotos] = useState<string[]>([]);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+  const [mainPhotoIdx, setMainPhotoIdx] = useState(0);
 
   // Personal
   const [name, setName] = useState("");
@@ -108,26 +109,53 @@ export default function ProfileEditPage() {
     setNeighborhood(user.neighborhood ?? "");
     const existingNeighborhoods = user.neighborhoodPreferences ?? (user.neighborhood ? [user.neighborhood] : []);
     setNeighborhoods(existingNeighborhoods);
-    setExistingPhotos(user.photoURLs ?? []);
+    const photos = user.photoURLs ?? [];
+    setExistingPhotos(photos);
+    setMainPhotoIdx(0);
   }, [user]);
 
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []).slice(0, 5);
     setPhotoFiles(files);
     setPhotoPreviews(files.map((f) => URL.createObjectURL(f)));
+    setMainPhotoIdx(0);
   }
 
   const displayPhotos = photoPreviews.length ? photoPreviews : existingPhotos;
+  const canReorderExisting = !photoFiles.length && displayPhotos.length > 0;
+  const canReorderNew = photoFiles.length > 0;
+
+  function movePhoto(from: number, to: number) {
+    if (to < 0 || to >= displayPhotos.length) return;
+    if (canReorderNew) {
+      const nextFiles = [...photoFiles];
+      const [moved] = nextFiles.splice(from, 1);
+      nextFiles.splice(to, 0, moved);
+      setPhotoFiles(nextFiles);
+      setPhotoPreviews(nextFiles.map((f) => URL.createObjectURL(f)));
+    } else {
+      const nextExisting = [...existingPhotos];
+      const [moved] = nextExisting.splice(from, 1);
+      nextExisting.splice(to, 0, moved);
+      setExistingPhotos(nextExisting);
+    }
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!uid) return;
     setSaving(true);
     try {
+      if (displayPhotos.length < 5) {
+        toast.error("Please upload 5 photos");
+        return;
+      }
       let photoURLs = existingPhotos;
       if (photoFiles.length) {
         photoURLs = await uploadProfilePhotos(uid, photoFiles);
       }
+      const mainUrl = photoURLs[mainPhotoIdx] ?? photoURLs[0] ?? "";
+      const reordered = mainUrl ? [mainUrl, ...photoURLs.filter((_, i) => i !== mainPhotoIdx)] : photoURLs;
       await updateUser(uid, {
         name, username, phone, age,
         occupation, companyIndustry, company, hometown, university,
@@ -137,8 +165,8 @@ export default function ProfileEditPage() {
         hasAC, hasLaundry, hasParking, moveCity,
         neighborhood: neighborhoods[0] ?? neighborhood,
         neighborhoodPreferences: neighborhoods,
-        photoURLs,
-        profileImageURL: photoURLs[0] ?? user?.profileImageURL ?? "",
+        photoURLs: reordered,
+        profileImageURL: reordered[0] ?? user?.profileImageURL ?? "",
       });
       toast.success("Profile saved!");
       router.push("/profile");
@@ -188,26 +216,59 @@ export default function ProfileEditPage() {
         {/* ─── Photos ─────────────────────────────────────── */}
         <Section title="Photos">
           <div className="space-y-3">
-            <p className="text-sm text-gray-500">First photo is your main profile picture</p>
-            <div className="relative aspect-video rounded-2xl overflow-hidden bg-roome-pale flex items-center justify-center">
-              {displayPhotos[0]
-                ? <img src={displayPhotos[0]} alt="" className="w-full h-full object-cover" />
+            <p className="text-sm text-gray-500">Upload 5 photos · Tap a photo to set your profile picture</p>
+            <div className="relative aspect-video rounded-2xl overflow-hidden bg-roome-core/20 flex items-center justify-center">
+              {displayPhotos[mainPhotoIdx]
+                ? <img src={displayPhotos[mainPhotoIdx]} alt="" className="w-full h-full object-cover" />
                 : <span className="text-4xl text-roome-deep/30">+</span>
               }
               <span className="absolute top-2 left-2 bg-roome-core text-white text-[10px] font-bold px-2 py-0.5 rounded-full">MAIN PHOTO</span>
             </div>
             <div className="grid grid-cols-4 gap-2">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="aspect-square rounded-xl overflow-hidden bg-roome-pale flex items-center justify-center">
-                  {displayPhotos[i + 1]
-                    ? <img src={displayPhotos[i + 1]} alt="" className="w-full h-full object-cover" />
-                    : <span className="text-roome-deep/30 text-2xl">+</span>
-                  }
-                </div>
-              ))}
+              {Array.from({ length: 4 }).map((_, i) => {
+                const idx = i + 1;
+                return (
+                  <button
+                    type="button"
+                    key={i}
+                    onClick={() => setMainPhotoIdx(idx)}
+                    className={`aspect-square rounded-xl overflow-hidden bg-roome-core/20 flex items-center justify-center ${mainPhotoIdx === idx ? "ring-2 ring-roome-core" : ""}`}
+                  >
+                    {displayPhotos[idx]
+                      ? <img src={displayPhotos[idx]} alt="" className="w-full h-full object-cover" />
+                      : <span className="text-roome-deep/30 text-2xl">+</span>
+                    }
+                  </button>
+                );
+              })}
             </div>
+            {displayPhotos.length > 1 && (
+              <div className="grid grid-cols-5 gap-2">
+                {displayPhotos.map((src, i) => (
+                  <div key={i} className="rounded-xl bg-roome-core/20 p-2 text-center">
+                    <img src={src} alt="" className="w-full h-16 object-cover rounded-lg mb-2" />
+                    <div className="flex gap-1 justify-center">
+                      <button
+                        type="button"
+                        className="text-xs px-2 py-1 rounded-lg bg-white shadow-sm text-roome-black"
+                        onClick={() => movePhoto(i, i - 1)}
+                      >
+                        ←
+                      </button>
+                      <button
+                        type="button"
+                        className="text-xs px-2 py-1 rounded-lg bg-white shadow-sm text-roome-black"
+                        onClick={() => movePhoto(i, i + 1)}
+                      >
+                        →
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
             <label className="block text-center">
-              <span className="inline-block bg-roome-pale text-roome-deep font-semibold px-6 py-3 rounded-2xl cursor-pointer hover:opacity-80 transition text-sm">
+              <span className="inline-block bg-roome-core/20 text-roome-black font-semibold px-6 py-3 rounded-2xl cursor-pointer hover:opacity-80 transition text-sm">
                 {photoFiles.length ? `${photoFiles.length} photo${photoFiles.length > 1 ? "s" : ""} selected` : "Choose Photos (up to 5)"}
               </span>
               <input type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoChange} />
@@ -217,12 +278,12 @@ export default function ProfileEditPage() {
 
         {/* ─── Personal Info ──────────────────────────────── */}
         <Section title="Personal Info">
-          <Field label="Full Name" placeholder="Your full name" value={name} onChange={setName} />
-          <ReadonlyField label="Email" value={user?.email ?? ""} />
-          <Field label="Username" placeholder="@yourhandle" value={username}
+          <Field label="Full Name" placeholder="Your full name" value={name} onChange={setName} labelClassName="text-roome-black" />
+          <ReadonlyField label="Email" value={user?.email ?? ""} labelClassName="text-roome-black" />
+          <Field label="Username" placeholder="@yourhandle" value={username} labelClassName="text-roome-black"
             onChange={(v) => setUsername(v.toLowerCase().replace(/\s/g, ""))} />
-          <Field label="Phone Number" placeholder="+1 (555) 000-0000" value={phone} onChange={setPhone} type="tel" />
-          <Field label="Age" placeholder="e.g. 24" value={age} onChange={setAge} type="number" />
+          <Field label="Phone Number" placeholder="+1 (555) 000-0000" value={phone} onChange={setPhone} type="tel" labelClassName="text-roome-black" />
+          <Field label="Age" placeholder="e.g. 24" value={age} onChange={setAge} type="number" labelClassName="text-roome-black" />
         </Section>
 
         {/* ─── About You ──────────────────────────────────── */}
@@ -232,6 +293,7 @@ export default function ProfileEditPage() {
             value={companyIndustry}
             onChange={(v) => { setCompanyIndustry(v); setCompany(""); setOccupation(""); }}
             options={INDUSTRY_OPTIONS}
+            labelClassName="text-roome-black"
           />
           <SelectField
             label="Company"
@@ -240,6 +302,7 @@ export default function ProfileEditPage() {
             options={COMPANIES_BY_INDUSTRY[companyIndustry] ?? []}
             disabled={!companyIndustry}
             placeholder={companyIndustry ? "Select…" : "Select an industry first"}
+            labelClassName="text-roome-black"
           />
           <SelectField
             label="Job Title"
@@ -248,15 +311,16 @@ export default function ProfileEditPage() {
             options={JOB_TITLES_BY_INDUSTRY[companyIndustry] ?? JOB_TITLE_OPTIONS}
             disabled={!companyIndustry}
             placeholder={companyIndustry ? "Select…" : "Select an industry first"}
+            labelClassName="text-roome-black"
           />
-          <Field label="Hometown" placeholder="e.g. Austin, TX" value={hometown} onChange={setHometown} />
+          <Field label="Hometown" placeholder="e.g. Austin, TX" value={hometown} onChange={setHometown} labelClassName="text-roome-black" />
           <Combobox
             label="College / University"
             placeholder="Search your school…"
             value={university}
             onChange={setUniversity}
             options={universities}
-            inputClassName="bg-roome-pale text-roome-black placeholder-roome-deep/60 focus:bg-white"
+            inputClassName="bg-roome-core/20 text-roome-black placeholder-roome-black/60 focus:bg-white"
           />
         </Section>
 
@@ -268,7 +332,7 @@ export default function ProfileEditPage() {
               onChange={(e) => setBio(e.target.value.slice(0, 300))}
               placeholder="I'm a grad student who loves hiking, cooking, and keeping things tidy…"
               rows={4}
-              className="w-full px-4 py-3 rounded-2xl bg-roome-pale border border-transparent resize-none focus:outline-none focus:ring-2 focus:ring-roome-core/40 focus:bg-white transition"
+              className="w-full px-4 py-3 rounded-2xl bg-roome-core/20 text-roome-black placeholder-roome-black/60 border border-transparent resize-none focus:outline-none focus:ring-2 focus:ring-roome-core/40 focus:bg-white transition"
             />
             <p className="text-xs text-gray-400 text-right">{bio.length}/300</p>
           </div>
@@ -356,11 +420,12 @@ export default function ProfileEditPage() {
 
           <Combobox
             label="Target City"
-            placeholder="Where do you want to move?"
+            placeholder="Where are you moving?"
             value={moveCity}
             onChange={(v) => { setMoveCity(v); setNeighborhood(""); }}
             options={cities}
-            inputClassName="bg-roome-pale text-roome-black placeholder-roome-deep/60 focus:bg-white"
+            inputClassName="bg-roome-core/20 text-roome-black placeholder-roome-black/60 focus:bg-white"
+            labelClassName="text-roome-black"
           />
 
           {neighborhoodOptions.length > 0 ? (
@@ -395,8 +460,10 @@ export default function ProfileEditPage() {
       <div className="mt-10 space-y-4">
         <h2 className="text-lg font-bold font-heading">Change Password</h2>
         <Field label="New Password" placeholder="At least 6 characters" value={newPassword}
+          labelClassName="text-roome-black"
           onChange={setNewPassword} type="password" />
         <Field label="Confirm Password" placeholder="Repeat new password" value={confirmPassword}
+          labelClassName="text-roome-black"
           onChange={setConfirmPassword} type="password" />
         <Button
           type="button"
@@ -427,19 +494,20 @@ function Card({ children }: { children: React.ReactNode }) {
   return <div className="bg-white rounded-2xl p-4 shadow-sm">{children}</div>;
 }
 
-function Field({ label, placeholder, value, onChange, type = "text" }: {
+function Field({ label, placeholder, value, onChange, type = "text", labelClassName }: {
   label: string; placeholder: string; value: string;
   onChange: (v: string) => void; type?: string;
+  labelClassName?: string;
 }) {
   return (
     <div className="space-y-1">
-      <label className="text-sm font-medium text-gray-600">{label}</label>
+      <label className={`text-sm font-medium ${labelClassName ?? "text-roome-core"}`}>{label}</label>
       <input
         type={type}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-4 py-3 rounded-2xl bg-roome-pale border border-transparent focus:outline-none focus:ring-2 focus:ring-roome-core/40 focus:bg-white transition"
+        className="w-full px-4 py-3 rounded-2xl bg-roome-core/20 text-roome-black placeholder-roome-black/60 border border-transparent focus:outline-none focus:ring-2 focus:ring-roome-core/40 focus:bg-white transition"
       />
     </div>
   );
@@ -452,6 +520,7 @@ function SelectField({
   options,
   disabled,
   placeholder,
+  labelClassName,
 }: {
   label: string;
   value: string;
@@ -459,15 +528,16 @@ function SelectField({
   options: string[];
   disabled?: boolean;
   placeholder?: string;
+  labelClassName?: string;
 }) {
   return (
     <div className="space-y-1">
-      <label className="text-sm font-medium text-gray-600">{label}</label>
+      <label className={`text-sm font-medium ${labelClassName ?? "text-roome-core"}`}>{label}</label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="w-full px-4 py-3 rounded-2xl bg-roome-pale border border-transparent focus:outline-none focus:ring-2 focus:ring-roome-core/40 focus:bg-white transition disabled:opacity-60"
+        className="w-full px-4 py-3 rounded-2xl bg-roome-core/20 text-roome-black border border-transparent focus:outline-none focus:ring-2 focus:ring-roome-core/40 focus:bg-white transition disabled:opacity-60"
       >
         <option value="">{placeholder ?? "Select…"}</option>
         {options.map((opt) => (
@@ -478,11 +548,11 @@ function SelectField({
   );
 }
 
-function ReadonlyField({ label, value }: { label: string; value: string }) {
+function ReadonlyField({ label, value, labelClassName }: { label: string; value: string; labelClassName?: string }) {
   return (
     <div className="space-y-1">
-      <label className="text-sm font-medium text-gray-600">{label}</label>
-      <div className="w-full px-4 py-3 rounded-2xl bg-roome-pale text-roome-black text-sm">{value}</div>
+      <label className={`text-sm font-medium ${labelClassName ?? "text-roome-core"}`}>{label}</label>
+      <div className="w-full px-4 py-3 rounded-2xl bg-roome-core/20 text-roome-black text-sm">{value}</div>
     </div>
   );
 }
@@ -1779,9 +1849,15 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
         role="switch"
         aria-checked={value}
         onClick={() => onChange(!value)}
-        className={`w-12 h-6 rounded-full transition-colors relative ${value ? "bg-roome-core" : "bg-gray-300"}`}
+        className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
+          value ? "bg-roome-core" : "bg-roome-core/20"
+        }`}
       >
-        <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${value ? "translate-x-7" : "translate-x-1"}`} />
+        <span
+          className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+            value ? "translate-x-6" : "translate-x-0"
+          }`}
+        />
       </button>
     </div>
   );
@@ -1796,7 +1872,9 @@ function OptionPicker({ selected, options, onSelect }: { selected: string; optio
           type="button"
           onClick={() => onSelect(opt)}
           className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-            selected === opt ? "bg-roome-core text-white" : "bg-roome-pale text-roome-deep"
+            selected === opt
+              ? "bg-roome-core text-white"
+              : "bg-roome-core/20 text-roome-core"
           }`}
         >
           {opt}

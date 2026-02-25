@@ -42,10 +42,14 @@ export function ConvoList() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">
-          <MessageSquare className="w-10 h-10 mx-auto mb-2 text-gray-300" />
-          <p className="font-semibold">No conversations yet</p>
-          <p className="text-sm">Match with someone to start chatting!</p>
+        <div className="bg-white rounded-2xl p-4 text-sm text-gray-600 shadow-sm border border-gray-100">
+          <div className="flex items-center gap-3">
+            <MessageSquare className="w-5 h-5 text-gray-400" />
+            <div>
+              <p className="font-semibold text-gray-800">No conversations yet</p>
+              <p className="text-sm text-gray-500">Match with someone to start chatting.</p>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="bg-white rounded-2xl shadow-sm divide-y divide-gray-50">

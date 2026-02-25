@@ -8,7 +8,7 @@ import { SavedListingCard } from "@/components/listings/SavedListingCard";
 import { AddListingModal } from "@/components/listings/AddListingModal";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { Home, FolderPlus, Share2 } from "lucide-react";
+import { Home, FolderPlus, Share2, Trash2 } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { sendMessage, shareListingFolder } from "@/lib/firebase/firestore";
@@ -19,7 +19,7 @@ import { Avatar } from "@/components/ui/Avatar";
 export default function ListingsPage() {
   const { user } = useCurrentUser();
   const { listings, loading } = useSavedListings();
-  const { folders, addFolder } = useListingFolders();
+  const { folders, addFolder, removeFolder } = useListingFolders();
   const { uid } = useAuthStore();
   const { convos } = useConversations();
   const { addListingModalOpen, setAddListingModalOpen } = useUiStore();
@@ -28,6 +28,7 @@ export default function ListingsPage() {
   const [newFolderName, setNewFolderName] = useState("");
   const [shareOpen, setShareOpen] = useState(false);
   const [shareFolderId, setShareFolderId] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [sharing, setSharing] = useState(false);
 
   const visibleListings = activeFolderId === "all"
@@ -65,7 +66,7 @@ export default function ListingsPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6">
+    <div className="w-full px-4 py-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-black">Saved Listings</h1>
@@ -90,33 +91,51 @@ export default function ListingsPage() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 flex-wrap mb-6">
-        <button
-          onClick={() => setActiveFolderId("all")}
-          className={`px-3 py-1.5 rounded-xl text-sm font-medium ${
-            activeFolderId === "all" ? "bg-roome-core text-white" : "bg-roome-core/10 text-roome-core"
-          }`}
-        >
-          All
-        </button>
-        {folders.map((f) => (
-          <div key={f.id} className="flex items-center gap-2">
-            <button
-              onClick={() => setActiveFolderId(f.id)}
-              className={`px-3 py-1.5 rounded-xl text-sm font-medium ${
-                activeFolderId === f.id ? "bg-roome-core text-white" : "bg-roome-core/10 text-roome-core"
-              }`}
+      <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setActiveFolderId("all")}
+            className={`px-3 py-1.5 rounded-xl text-sm font-medium ${
+              activeFolderId === "all" ? "bg-roome-core text-white" : "bg-roome-core/10 text-roome-core"
+            }`}
+          >
+            All
+          </button>
+          {folders.map((f) => (
+            <div key={f.id} className="flex items-center gap-2">
+              <button
+                onClick={() => setActiveFolderId(f.id)}
+                className={`px-3 py-1.5 rounded-xl text-sm font-medium ${
+                  activeFolderId === f.id ? "bg-roome-core text-white" : "bg-roome-core/10 text-roome-core"
+                }`}
+              >
+                {f.name}
+              </button>
+            </div>
+          ))}
+        </div>
+        {activeFolderId !== "all" && (
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="inline-flex items-center gap-2"
+              onClick={() => { setShareFolderId(null); setShareOpen(true); }}
             >
-              {f.name}
-            </button>
-            <button
-              className="p-2 rounded-xl bg-roome-core/10 text-roome-core hover:bg-roome-core/20"
-              onClick={() => { setShareFolderId(f.id); setShareOpen(true); }}
+              <Share2 className="w-4 h-4" />
+              Share Folder
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="inline-flex items-center gap-2"
+              onClick={() => setDeleteOpen(true)}
             >
-              <Share2 className="w-3.5 h-3.5" />
-            </button>
+              <Trash2 className="w-4 h-4" />
+              Delete Folder
+            </Button>
           </div>
-        ))}
+        )}
       </div>
 
       {loading ? (
@@ -188,6 +207,50 @@ export default function ListingsPage() {
               </div>
             )}
             <Button variant="secondary" className="w-full mt-4" onClick={() => setShareOpen(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
+      {shareOpen && !shareFolderId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6">
+            <h3 className="font-bold text-lg mb-4">Choose a Folder to Share</h3>
+            <div className="space-y-2 max-h-72 overflow-y-auto">
+              {folders.map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => setShareFolderId(f.id)}
+                  className="w-full text-left p-3 rounded-2xl hover:bg-gray-50 transition-colors"
+                >
+                  {f.name}
+                </button>
+              ))}
+            </div>
+            <Button variant="secondary" className="w-full mt-4" onClick={() => setShareOpen(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
+
+      {deleteOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6">
+            <h3 className="font-bold text-lg mb-4">Choose a Folder to Delete</h3>
+            <div className="space-y-2 max-h-72 overflow-y-auto">
+              {folders.filter((f) => f.ownerUid === uid).map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => {
+                    if (confirm(`Delete folder "${f.name}"? Listings will be left unfiled.`)) {
+                      void removeFolder(f.id);
+                      setDeleteOpen(false);
+                    }
+                  }}
+                  className="w-full text-left p-3 rounded-2xl hover:bg-gray-50 transition-colors"
+                >
+                  {f.name}
+                </button>
+              ))}
+            </div>
+            <Button variant="secondary" className="w-full mt-4" onClick={() => setDeleteOpen(false)}>Cancel</Button>
           </div>
         </div>
       )}

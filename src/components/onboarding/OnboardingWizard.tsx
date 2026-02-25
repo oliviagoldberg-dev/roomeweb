@@ -41,6 +41,7 @@ export function OnboardingWizard() {
   // Photos
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+  const [mainPhotoIdx, setMainPhotoIdx] = useState(0);
 
   // Personal
   const [username, setUsername] = useState(roommateUser?.username ?? "");
@@ -81,6 +82,7 @@ export function OnboardingWizard() {
     const files = Array.from(e.target.files ?? []).slice(0, 5);
     setPhotoFiles(files);
     setPhotoPreviews(files.map((f) => URL.createObjectURL(f)));
+    setMainPhotoIdx(0);
   }
 
   function next() { setStep((s) => Math.min(s + 1, TOTAL - 1)); }
@@ -90,8 +92,14 @@ export function OnboardingWizard() {
     if (!uid) { toast.error("Not logged in"); return; }
     setSaving(true);
     try {
+      if (photoFiles.length < 5) {
+        toast.error("Please upload 5 photos");
+        return;
+      }
       let photoURLs: string[] = [];
       if (photoFiles.length) photoURLs = await uploadOnboardingPhotos(uid, photoFiles);
+      const mainUrl = photoURLs[mainPhotoIdx] ?? photoURLs[0] ?? "";
+      const reordered = mainUrl ? [mainUrl, ...photoURLs.filter((_, i) => i !== mainPhotoIdx)] : photoURLs;
 
       const data = {
         uid, username, phone, age,
@@ -99,8 +107,8 @@ export function OnboardingWizard() {
         hasPet, smokes, host, workFromHome, cleanliness, sleepSchedule,
         budgetMin, budgetMax, beds, baths, furnished, leaseLength,
         hasAC, hasLaundry, hasParking, moveCity, neighborhood,
-        bio, photoURLs,
-        profileImageURL: photoURLs[0] ?? "",
+        bio, photoURLs: reordered,
+        profileImageURL: reordered[0] ?? "",
         connections: [],
         likedBy: [],
         onboardingComplete: true,
@@ -118,7 +126,7 @@ export function OnboardingWizard() {
   const renderStep = () => {
     switch (step) {
       case 0: return <WelcomeStep />;
-      case 1: return <PhotosStep previews={photoPreviews} onChange={handlePhotoChange} />;
+      case 1: return <PhotosStep previews={photoPreviews} onChange={handlePhotoChange} mainIdx={mainPhotoIdx} onSelectMain={setMainPhotoIdx} />;
       case 2: return (
         <PersonalStep
           username={username} setUsername={setUsername}
@@ -209,26 +217,39 @@ function WelcomeStep() {
   );
 }
 
-function PhotosStep({ previews, onChange }: { previews: string[]; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }) {
+function PhotosStep({ previews, onChange, mainIdx, onSelectMain }: {
+  previews: string[];
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  mainIdx: number;
+  onSelectMain: (i: number) => void;
+}) {
   return (
     <div className="space-y-5 py-4">
-      <p className="text-sm text-gray-500 text-center">Add up to 5 photos · First photo is your profile picture</p>
+      <p className="text-sm text-gray-500 text-center">Upload 5 photos · Tap a photo to set your profile picture</p>
       <div className="relative aspect-video rounded-2xl overflow-hidden bg-roome-pale flex items-center justify-center">
-        {previews[0]
-          ? <img src={previews[0]} alt="" className="w-full h-full object-cover" />
+        {previews[mainIdx]
+          ? <img src={previews[mainIdx]} alt="" className="w-full h-full object-cover" />
           : <span className="text-4xl text-roome-deep/30">+</span>
         }
         <span className="absolute top-2 left-2 bg-roome-core text-white text-[10px] font-bold px-2 py-0.5 rounded-full">MAIN PHOTO</span>
       </div>
       <div className="grid grid-cols-4 gap-2">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="aspect-square rounded-xl overflow-hidden bg-roome-pale flex items-center justify-center">
-            {previews[i + 1]
-              ? <img src={previews[i + 1]} alt="" className="w-full h-full object-cover" />
-              : <span className="text-roome-deep/30 text-2xl">+</span>
-            }
-          </div>
-        ))}
+        {Array.from({ length: 4 }).map((_, i) => {
+          const idx = i + 1;
+          return (
+            <button
+              type="button"
+              key={i}
+              onClick={() => onSelectMain(idx)}
+              className={`aspect-square rounded-xl overflow-hidden bg-roome-pale flex items-center justify-center ${mainIdx === idx ? "ring-2 ring-roome-core" : ""}`}
+            >
+              {previews[idx]
+                ? <img src={previews[idx]} alt="" className="w-full h-full object-cover" />
+                : <span className="text-roome-deep/30 text-2xl">+</span>
+              }
+            </button>
+          );
+        })}
       </div>
       <label className="block text-center">
         <span className="inline-block bg-roome-pale text-roome-deep font-semibold px-6 py-3 rounded-2xl cursor-pointer hover:opacity-80 transition">
@@ -392,7 +413,7 @@ function HomeRequirementsStep(props: {
 
       <Combobox
         label="Target City"
-        placeholder="Where do you want to move?"
+        placeholder="Where are you moving?"
         value={props.moveCity}
         onChange={props.setMoveCity}
         options={cities}
@@ -492,9 +513,15 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
         role="switch"
         aria-checked={value}
         onClick={() => onChange(!value)}
-        className={`w-12 h-6 rounded-full transition-colors relative ${value ? "bg-roome-core" : "bg-gray-300"}`}
+        className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
+          value ? "bg-roome-core" : "bg-roome-core/20"
+        }`}
       >
-        <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${value ? "translate-x-7" : "translate-x-1"}`} />
+        <span
+          className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+            value ? "translate-x-6" : "translate-x-0"
+          }`}
+        />
       </button>
     </div>
   );

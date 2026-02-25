@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { listenToListingFolders, createListingFolder } from "@/lib/firebase/firestore";
+import { listenToListingFolders, createListingFolder, deleteListingFolder } from "@/lib/firebase/firestore";
 import { useAuthStore } from "@/store/authStore";
 import type { ListingFolder } from "@/types/folders";
 
@@ -35,5 +35,9 @@ export function useListingFolders() {
     await createListingFolder(uid, name);
   }
 
-  return { folders, loading, addFolder };
+  async function removeFolder(id: string) {
+    await deleteListingFolder(id);
+  }
+
+  return { folders, loading, addFolder, removeFolder };
 }

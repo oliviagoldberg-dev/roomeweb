@@ -16,8 +16,8 @@ const robotoBody = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "ROOMe — Find Your Perfect Roommate",
-  description: "ROOMe helps you find compatible roommates and apartments.",
+  title: "ROOMe. — Find your person. Find your place.",
+  description: "ROOMe. Find your person. Find your place.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

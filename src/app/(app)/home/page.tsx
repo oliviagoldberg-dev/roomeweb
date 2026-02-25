@@ -4,11 +4,11 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import Link from "next/link";
 import {
   Search,
-  Sparkles,
   MessageSquare,
   BookMarked,
   Users,
   User,
+  Bell,
 } from "lucide-react";
 import { RoomeWordmark } from "@/components/ui/Wordmark";
 
@@ -34,12 +34,12 @@ export default function HomePage() {
 
       <div className="grid grid-cols-2 gap-4">
         {[
-          { href: "/browse",   Icon: Search,       title: "Browse",   desc: "Find roommates in your city"   },
-          { href: "/discover", Icon: Sparkles,     title: "Discover", desc: "Swipe through matches"         },
-          { href: "/messages", Icon: MessageSquare, title: "Messages", desc: "Chat with your connections"    },
-          { href: "/listings", Icon: BookMarked,   title: "Listings", desc: "Save & share apartments"        },
-          { href: "/friends",  Icon: Users,        title: "Friends",  desc: "Grow your network"              },
-          { href: "/profile",  Icon: User,         title: "Profile",  desc: "Manage your profile"            },
+          { href: "/browse",        Icon: Search,        title: "Browse",        desc: "Find your roommate" },
+          { href: "/messages",      Icon: MessageSquare, title: "Messages",      desc: "Chat with your connections" },
+          { href: "/friends",       Icon: Users,         title: "Friends",       desc: "Grow your network" },
+          { href: "/listings",      Icon: BookMarked,    title: "Listings",      desc: "Save & share apartments" },
+          { href: "/notifications", Icon: Bell,          title: "Notifications", desc: "See updates and alerts" },
+          { href: "/profile",       Icon: User,          title: "Profile",       desc: "Manage your profile" },
         ].map(({ href, Icon, title, desc }) => (
           <Link
             key={href}

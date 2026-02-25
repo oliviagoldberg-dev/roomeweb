@@ -44,6 +44,10 @@ export interface RoommateUser {
   onboardingComplete: boolean;
   inviteCode?: string;
   createdAt?: string;
+  notifyMatches?: boolean;
+  notifyMessages?: boolean;
+  notifyListings?: boolean;
+  notifyFriendRequests?: boolean;
 }
 
 export type RoommateUserPartial = Partial<RoommateUser> & { id: string };

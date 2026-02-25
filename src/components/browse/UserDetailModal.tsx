@@ -16,7 +16,7 @@ interface UserDetailModalProps {
   onClose: () => void;
 }
 
-function PhotoSwiper({ photos, name }: { photos: string[]; name: string }) {
+export function PhotoSwiper({ photos, name, heightClass = "h-64" }: { photos: string[]; name: string; heightClass?: string }) {
   const [idx, setIdx] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
 
@@ -34,7 +34,7 @@ function PhotoSwiper({ photos, name }: { photos: string[]; name: string }) {
 
   if (!photos.length) {
     return (
-      <div className="h-64 bg-gradient-to-br from-roome-core to-roome-glow flex items-center justify-center">
+      <div className={`${heightClass} bg-gradient-to-br from-roome-core to-roome-glow flex items-center justify-center`}>
         <Avatar src={null} name={name} size={100} />
       </div>
     );
@@ -42,7 +42,7 @@ function PhotoSwiper({ photos, name }: { photos: string[]; name: string }) {
 
   return (
     <div
-      className="relative h-64 overflow-hidden select-none"
+      className={`relative ${heightClass} overflow-hidden select-none`}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >

@@ -13,7 +13,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<Variant, string> = {
   primary:   "bg-roome-core text-white hover:bg-roome-deep disabled:opacity-50",
-  secondary: "bg-roome-core/10 text-roome-core hover:bg-roome-core/20",
+  secondary: "bg-roome-core/20 text-roome-core hover:bg-roome-core/30",
   ghost:     "bg-transparent text-roome-core hover:bg-roome-core/10",
   danger:    "bg-red-500 text-white hover:bg-red-600",
 };
