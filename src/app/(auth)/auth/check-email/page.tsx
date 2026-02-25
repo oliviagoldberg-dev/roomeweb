@@ -9,9 +9,9 @@ export default function CheckEmailPage() {
         We sent a verification link. Click it to confirm your email, then you’ll be signed in automatically.
       </p>
       <div className="pt-2">
-        <Button asChild size="lg" className="w-full">
-          <Link href="/login">Back to Sign In</Link>
-        </Button>
+        <Link href="/login" className="block">
+          <Button size="lg" className="w-full">Back to Sign In</Button>
+        </Link>
       </div>
     </div>
   );
