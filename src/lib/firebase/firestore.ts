@@ -165,7 +165,7 @@ export function listenToConversations(uid: string, cb: (rows: any[]) => void) {
     .subscribe();
 
   return () => {
-    supabase.removeChannel(channel);
+    void supabase.removeChannel(channel);
   };
 }
 
@@ -211,7 +211,7 @@ export function listenToMessages(convoId: string, cb: (rows: any[]) => void) {
   const poll = setInterval(fetch, 3000);
   return () => {
     clearInterval(poll);
-    supabase.removeChannel(channel);
+    void supabase.removeChannel(channel);
   };
 }
 
@@ -275,7 +275,9 @@ export function listenToFriendships(uid: string, cb: (rows: any[]) => void) {
     .channel(`friendships:${uid}`)
     .on("postgres_changes", { event: "*", schema: "public", table: "friendships" }, () => fetch())
     .subscribe();
-  return () => supabase.removeChannel(channel);
+  return () => {
+    void supabase.removeChannel(channel);
+  };
 }
 
 export function listenToFriendRequests(uid: string, cb: (rows: any[]) => void) {
@@ -292,7 +294,9 @@ export function listenToFriendRequests(uid: string, cb: (rows: any[]) => void) {
     .channel(`friend_requests:${uid}`)
     .on("postgres_changes", { event: "*", schema: "public", table: "friend_requests" }, () => fetch())
     .subscribe();
-  return () => supabase.removeChannel(channel);
+  return () => {
+    void supabase.removeChannel(channel);
+  };
 }
 
 export async function sendFriendRequest(fromUID: string, toUID: string) {
@@ -412,5 +416,7 @@ export function listenToSavedListings(uid: string, cb: (rows: any[]) => void) {
     .channel(`listings:${uid}`)
     .on("postgres_changes", { event: "*", schema: "public", table: "listings", filter: `ownerUid=eq.${uid}` }, () => fetch())
     .subscribe();
-  return () => supabase.removeChannel(channel);
+  return () => {
+    void supabase.removeChannel(channel);
+  };
 }
