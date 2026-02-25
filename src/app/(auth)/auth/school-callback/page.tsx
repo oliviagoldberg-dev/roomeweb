@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 
-export default function SchoolCallbackPage() {
+export const dynamic = "force-dynamic";
+
+function SchoolCallbackClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [message, setMessage] = useState("Verifying your school email...");
@@ -49,5 +51,22 @@ export default function SchoolCallbackPage() {
         </Button>
       </div>
     </div>
+  );
+}
+
+export default function SchoolCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center p-6">
+          <div className="bg-white rounded-3xl shadow-2xl p-6 text-center max-w-sm w-full">
+            <p className="text-sm text-gray-600 mb-4">Verifying your school email...</p>
+            <Button variant="secondary">Back to Verification</Button>
+          </div>
+        </div>
+      }
+    >
+      <SchoolCallbackClient />
+    </Suspense>
   );
 }
