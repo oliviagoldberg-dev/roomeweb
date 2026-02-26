@@ -6,6 +6,7 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { updateUser } from "@/lib/firebase/firestore";
 import { uploadProfilePhotos } from "@/lib/firebase/storage";
 import { changePassword } from "@/lib/firebase/auth";
+import { supabase } from "@/lib/supabase/client";
 import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -156,6 +157,11 @@ export default function ProfileEditPage() {
       }
       const mainUrl = photoURLs[mainPhotoIdx] ?? photoURLs[0] ?? "";
       const reordered = mainUrl ? [mainUrl, ...photoURLs.filter((_, i) => i !== mainPhotoIdx)] : photoURLs;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("You are not authenticated. Please log in again.");
+        return;
+      }
       await updateUser(uid, {
         name, username, phone, age,
         occupation, companyIndustry, company, hometown, university,
