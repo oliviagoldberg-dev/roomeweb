@@ -7,6 +7,7 @@ import { uploadOnboardingPhotos } from "@/lib/firebase/storage";
 import { updateUser } from "@/lib/firebase/firestore";
 import { ProgressBar } from "./ProgressBar";
 import { Button } from "@/components/ui/Button";
+import { PhotoCropModal } from "@/components/ui/PhotoCropModal";
 import {
   SLEEP_SCHEDULE_OPTIONS,
   WORK_FROM_HOME_OPTIONS,
@@ -42,6 +43,10 @@ export function OnboardingWizard() {
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [mainPhotoIdx, setMainPhotoIdx] = useState(0);
+  const [cropQueue, setCropQueue] = useState<File[]>([]);
+  const [cropIndex, setCropIndex] = useState(0);
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
 
   // Personal
   const [username, setUsername] = useState(roommateUser?.username ?? "");
@@ -80,9 +85,14 @@ export function OnboardingWizard() {
 
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []).slice(0, 5);
-    setPhotoFiles(files);
-    setPhotoPreviews(files.map((f) => URL.createObjectURL(f)));
+    if (!files.length) return;
+    setPhotoFiles([]);
+    setPhotoPreviews([]);
     setMainPhotoIdx(0);
+    setCropQueue(files);
+    setCropIndex(0);
+    setCropFile(files[0]);
+    setCropOpen(true);
   }
 
   function next() { setStep((s) => Math.min(s + 1, TOTAL - 1)); }
@@ -189,6 +199,23 @@ export function OnboardingWizard() {
           {step === 0 ? "Get Started" : step < TOTAL - 1 ? "Next" : "Finish"}
         </Button>
       </div>
+      <PhotoCropModal
+        open={cropOpen}
+        file={cropFile}
+        onCancel={() => setCropOpen(false)}
+        onComplete={(file, previewUrl) => {
+          setPhotoFiles((prev) => [...prev, file]);
+          setPhotoPreviews((prev) => [...prev, previewUrl]);
+          const nextIndex = cropIndex + 1;
+          if (nextIndex < cropQueue.length) {
+            setCropIndex(nextIndex);
+            setCropFile(cropQueue[nextIndex]);
+          } else {
+            setCropOpen(false);
+            setCropFile(null);
+          }
+        }}
+      />
     </div>
   );
 }

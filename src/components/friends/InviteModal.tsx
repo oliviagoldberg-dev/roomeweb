@@ -11,11 +11,20 @@ interface InviteModalProps {
 }
 
 export function InviteModal({ open, code, onClose }: InviteModalProps) {
+  const appUrl = typeof window !== "undefined" ? window.location.origin : "https://roomeweb-prod3.vercel.app";
+  const inviteLink = `${appUrl}/signup?invite=${code}`;
   const shareText = `Join me on ROOMe — the app for finding roommates. Use my invite code ${code} to sign up!`;
+  const shareBody = `${shareText}\n${inviteLink}`;
 
   function copyCode() {
-    navigator.clipboard.writeText(code);
-    toast.success("Invite code copied!");
+    navigator.clipboard.writeText(shareBody);
+    toast.success("Invite link copied!");
+  }
+
+  function sendText() {
+    if (typeof window === "undefined") return;
+    const body = encodeURIComponent(shareBody);
+    window.location.href = `sms:?&body=${body}`;
   }
 
   return (
@@ -41,15 +50,20 @@ export function InviteModal({ open, code, onClose }: InviteModalProps) {
             {typeof navigator !== "undefined" && navigator.share ? (
               <Button
                 className="w-full"
-                onClick={() => navigator.share({ text: shareText })}
+                onClick={() => navigator.share({ text: shareText, url: inviteLink })}
               >
                 <Share2 className="w-4 h-4" />
                 Share Invite
               </Button>
-            ) : null}
+            ) : (
+              <Button className="w-full" onClick={sendText}>
+                <Share2 className="w-4 h-4" />
+                Send Text
+              </Button>
+            )}
             <Button variant="secondary" className="w-full" onClick={copyCode}>
               <Copy className="w-4 h-4" />
-              Copy Code
+              Copy Invite Message
             </Button>
             <Button variant="ghost" className="w-full" onClick={onClose}>
               Done
