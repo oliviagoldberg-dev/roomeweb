@@ -103,7 +103,7 @@ export async function listBlockedUsers(uid: string): Promise<string[]> {
 export async function blockUser(blockerUid: string, blockedUid: string) {
   const { error } = await supabase
     .from("blocks")
-    .insert({ blockerUid, blockedUid, createdAt: new Date().toISOString() });
+    .insert({ blocker_uid: blockerUid, blocked_uid: blockedUid, created_at: new Date().toISOString() });
   if (error) throw error;
 }
 
