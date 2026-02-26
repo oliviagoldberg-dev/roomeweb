@@ -11,6 +11,7 @@ import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Combobox } from "@/components/ui/Combobox";
+import { PhotoCropModal } from "@/components/ui/PhotoCropModal";
 import {
   SLEEP_SCHEDULE_OPTIONS,
   WORK_FROM_HOME_OPTIONS,
@@ -33,6 +34,10 @@ export default function ProfileEditPage() {
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [mainPhotoIdx, setMainPhotoIdx] = useState(0);
+  const [cropQueue, setCropQueue] = useState<File[]>([]);
+  const [cropIndex, setCropIndex] = useState(0);
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
 
   // Personal
   const [name, setName] = useState("");
@@ -42,7 +47,6 @@ export default function ProfileEditPage() {
 
   // About You
   const [occupation, setOccupation] = useState("");
-  const [companyIndustry, setCompanyIndustry] = useState("");
   const [company, setCompany] = useState("");
   const [hometown, setHometown] = useState("");
   const [university, setUniversity] = useState("");
@@ -86,7 +90,6 @@ export default function ProfileEditPage() {
     setPhone(user.phone ?? "");
     setAge(user.age ?? "");
     setOccupation(user.occupation ?? "");
-    setCompanyIndustry(user.companyIndustry ?? "");
     setCompany(user.company ?? "");
     setHometown(user.hometown ?? "");
     setUniversity(user.university ?? "");
@@ -117,9 +120,14 @@ export default function ProfileEditPage() {
 
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []).slice(0, 5);
-    setPhotoFiles(files);
-    setPhotoPreviews(files.map((f) => URL.createObjectURL(f)));
+    if (!files.length) return;
+    setPhotoFiles([]);
+    setPhotoPreviews([]);
     setMainPhotoIdx(0);
+    setCropQueue(files);
+    setCropIndex(0);
+    setCropFile(files[0]);
+    setCropOpen(true);
   }
 
   const displayPhotos = photoPreviews.length ? photoPreviews : existingPhotos;
@@ -164,7 +172,7 @@ export default function ProfileEditPage() {
       }
       await updateUser(uid, {
         name, username, phone, age,
-        occupation, companyIndustry, company, hometown, university,
+        occupation, company, hometown, university,
         bio,
         hasPet, smokes, host, workFromHome, cleanliness, sleepSchedule,
         budgetMin, budgetMax, beds, baths, furnished, leaseLength,
@@ -294,31 +302,8 @@ export default function ProfileEditPage() {
 
         {/* ─── About You ──────────────────────────────────── */}
         <Section title="About You">
-          <SelectField
-            label="Industry"
-            value={companyIndustry}
-            onChange={(v) => { setCompanyIndustry(v); setCompany(""); setOccupation(""); }}
-            options={INDUSTRY_OPTIONS}
-            labelClassName="text-roome-black"
-          />
-          <SelectField
-            label="Company"
-            value={company}
-            onChange={setCompany}
-            options={COMPANIES_BY_INDUSTRY[companyIndustry] ?? []}
-            disabled={!companyIndustry}
-            placeholder={companyIndustry ? "Select…" : "Select an industry first"}
-            labelClassName="text-roome-black"
-          />
-          <SelectField
-            label="Job Title"
-            value={occupation}
-            onChange={setOccupation}
-            options={JOB_TITLES_BY_INDUSTRY[companyIndustry] ?? JOB_TITLE_OPTIONS}
-            disabled={!companyIndustry}
-            placeholder={companyIndustry ? "Select…" : "Select an industry first"}
-            labelClassName="text-roome-black"
-          />
+          <Field label="Job Title" placeholder="e.g. Product Designer" value={occupation} onChange={setOccupation} labelClassName="text-roome-black" />
+          <Field label="Company" placeholder="e.g. Google" value={company} onChange={setCompany} labelClassName="text-roome-black" />
           <Field label="Hometown" placeholder="e.g. Austin, TX" value={hometown} onChange={setHometown} labelClassName="text-roome-black" />
           <Combobox
             label="College / University"
@@ -461,6 +446,23 @@ export default function ProfileEditPage() {
 
         <Button type="submit" loading={saving} className="w-full" size="lg">Save Changes</Button>
       </form>
+      <PhotoCropModal
+        open={cropOpen}
+        file={cropFile}
+        onCancel={() => setCropOpen(false)}
+        onComplete={(file, previewUrl) => {
+          setPhotoFiles((prev) => [...prev, file]);
+          setPhotoPreviews((prev) => [...prev, previewUrl]);
+          const nextIndex = cropIndex + 1;
+          if (nextIndex < cropQueue.length) {
+            setCropIndex(nextIndex);
+            setCropFile(cropQueue[nextIndex]);
+          } else {
+            setCropOpen(false);
+            setCropFile(null);
+          }
+        }}
+      />
 
       {/* ─── Change Password ────────────────────────────── */}
       <div className="mt-10 space-y-4">

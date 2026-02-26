@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { signUp } from "@/lib/firebase/auth";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/Button";
 
 export function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { setFirebaseUser } = useAuthStore();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -18,6 +19,14 @@ export function SignupForm() {
   const [inviteCode, setInviteCode] = useState("");
   const [codeStatus, setCodeStatus] = useState<"idle" | "valid" | "invalid">("idle");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const invite = searchParams.get("invite");
+    if (invite) {
+      setInviteCode(invite.toUpperCase());
+      setCodeStatus("idle");
+    }
+  }, [searchParams]);
 
   async function handleCodeBlur() {
     const trimmed = inviteCode.trim().toUpperCase();
