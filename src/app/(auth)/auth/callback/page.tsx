@@ -7,6 +7,7 @@ import { getUser } from "@/lib/firebase/firestore";
 import { useAuthStore } from "@/store/authStore";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { RoommateUser } from "@/types/user";
+import type { EmailOtpType } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
@@ -20,23 +21,35 @@ function AuthCallbackClient() {
     async function handleCallback() {
       try {
         const code = searchParams.get("code");
+        const tokenHash = searchParams.get("token_hash");
+        const type = searchParams.get("type") as EmailOtpType | null;
+
+        let user = null;
         if (code) {
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
-          const user = data.session?.user ?? null;
-          setFirebaseUser(user);
-          if (user) {
-            const userData = await getUser(user.id);
-            setRoommateUser(userData as RoommateUser | null);
-            if (userData && !(userData as RoommateUser).onboardingComplete) {
-              router.replace("/onboarding");
-              return;
-            }
-          }
-          router.replace("/home");
-          return;
+          user = data.session?.user ?? null;
+        } else if (tokenHash && type) {
+          const { data, error } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type,
+          });
+          if (error) throw error;
+          user = data.user ?? null;
+        } else {
+          throw new Error("Missing callback params");
         }
-        setMessage("Invalid or expired link. Please try signing in again.");
+
+        setFirebaseUser(user);
+        if (user) {
+          const userData = await getUser(user.id);
+          setRoommateUser(userData as RoommateUser | null);
+          if (userData && !(userData as RoommateUser).onboardingComplete) {
+            router.replace("/onboarding");
+            return;
+          }
+        }
+        router.replace("/home");
       } catch {
         setMessage("Email verification failed. Please try signing in again.");
       }

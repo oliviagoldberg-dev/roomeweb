@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
+import type { EmailOtpType } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
@@ -16,12 +17,27 @@ function SchoolCallbackClient() {
     async function handleVerify() {
       try {
         const code = searchParams.get("code");
+        const tokenHash = searchParams.get("token_hash");
+        const type = searchParams.get("type") as EmailOtpType | null;
         const state = searchParams.get("state");
-        if (!code || !state) throw new Error("Invalid link");
+        if (!state) throw new Error("Invalid link");
 
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) throw error;
-        const user = data.session?.user;
+        let user = null;
+        if (code) {
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+          user = data.session?.user ?? null;
+        } else if (tokenHash && type) {
+          const { data, error } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type,
+          });
+          if (error) throw error;
+          user = data.user ?? null;
+        } else {
+          throw new Error("Invalid link");
+        }
+
         if (!user) throw new Error("No user");
 
         const { userId, schoolEmail } = JSON.parse(atob(state));
