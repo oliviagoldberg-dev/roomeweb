@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import { Bell } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
 import { RoomeWordmark } from "@/components/ui/Wordmark";
@@ -49,13 +48,6 @@ export function TopNav() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link
-            href="/notifications"
-            className="p-2 rounded-xl hover:bg-roome-pale/50 transition-colors text-roome-black"
-            aria-label="Notifications"
-          >
-            <Bell className="w-5 h-5" />
-          </Link>
           <Link href="/profile" className="rounded-full">
             <Avatar
               src={roommateUser?.profileImageURL ?? null}
