@@ -37,8 +37,8 @@ export function TopNav() {
                   key={href}
                   href={href}
                   className={cn(
-                    "px-3 py-2 rounded-xl text-sm font-semibold transition-colors whitespace-nowrap",
-                    active ? "bg-[#38b6ff] text-white" : "text-roome-black hover:bg-roome-pale/50"
+                    "px-3 py-2 text-sm font-semibold transition-colors whitespace-nowrap",
+                    active ? "text-[#38b6ff]" : "text-roome-black hover:text-[#38b6ff]"
                   )}
                 >
                   {label}
