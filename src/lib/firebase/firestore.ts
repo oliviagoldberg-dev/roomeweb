@@ -78,6 +78,20 @@ export async function updateUser(uid: string, data: Record<string, unknown>) {
   if (error) throw error;
 }
 
+export async function isUsernameAvailable(username: string, uid?: string): Promise<boolean> {
+  const normalized = username.trim().toLowerCase();
+  if (!normalized) return true;
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("username", normalized)
+    .limit(1);
+  if (error) throw error;
+  if (!data || data.length === 0) return true;
+  if (uid && data[0].id === uid) return true;
+  return false;
+}
+
 export async function fetchUsersInCity(city: string, excludeUid: string) {
   const { data, error } = await supabase
     .from("profiles")
@@ -128,6 +142,7 @@ export async function searchUsersByUsername(prefix: string, currentUid: string, 
     .from("profiles")
     .select("*")
     .ilike("username", `${prefix.toLowerCase()}%`)
+    .neq("id", currentUid)
     .limit(10);
   cb(data ?? []);
   return;
