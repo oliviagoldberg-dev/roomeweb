@@ -35,15 +35,20 @@ export function PhotoCropModal({ open, file, onCancel, onComplete }: PhotoCropMo
 
   useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
 
-  const baseScale = imgSize.w && imgSize.h ? Math.max(CROP_VIEW_SIZE / imgSize.w, CROP_VIEW_SIZE / imgSize.h) : 1;
-  const displayW = imgSize.w * baseScale * zoom;
-  const displayH = imgSize.h * baseScale * zoom;
-  const maxOffsetX = Math.max(0, (displayW - CROP_VIEW_SIZE) / 2);
-  const maxOffsetY = Math.max(0, (displayH - CROP_VIEW_SIZE) / 2);
+  const baseScale = imgSize.w && imgSize.h
+    ? Math.max(CROP_VIEW_SIZE / imgSize.w, CROP_VIEW_SIZE / imgSize.h)
+    : 1;
+  const displayW = imgSize.w * baseScale;
+  const displayH = imgSize.h * baseScale;
+  const scaledW = displayW * zoom;
+  const scaledH = displayH * zoom;
+  const maxOffsetX = Math.max(0, (scaledW - CROP_VIEW_SIZE) / 2);
+  const maxOffsetY = Math.max(0, (scaledH - CROP_VIEW_SIZE) / 2);
   const safeOffset = {
     x: clamp(offset.x, -maxOffsetX, maxOffsetX),
     y: clamp(offset.y, -maxOffsetY, maxOffsetY),
   };
+  const zoomFill = `linear-gradient(to right, #38b6ff 0%, #38b6ff ${Math.round(((zoom - 1) / 2) * 100)}%, #D6ECFF ${Math.round(((zoom - 1) / 2) * 100)}%, #D6ECFF 100%)`;
 
   function onPointerDown(e: React.PointerEvent) {
     if (!file) return;
@@ -54,7 +59,11 @@ export function PhotoCropModal({ open, file, onCancel, onComplete }: PhotoCropMo
 
   function onPointerMove(e: React.PointerEvent) {
     if (!dragging) return;
-    setOffset({ x: e.clientX - start.x, y: e.clientY - start.y });
+    const next = { x: e.clientX - start.x, y: e.clientY - start.y };
+    setOffset({
+      x: clamp(next.x, -maxOffsetX, maxOffsetX),
+      y: clamp(next.y, -maxOffsetY, maxOffsetY),
+    });
   }
 
   function onPointerUp(e: React.PointerEvent) {
@@ -74,7 +83,8 @@ export function PhotoCropModal({ open, file, onCancel, onComplete }: PhotoCropMo
     <Dialog.Root open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-        <Dialog.Content className="fixed inset-x-4 top-1/2 -translate-y-1/2 sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md bg-white rounded-3xl shadow-2xl z-50 p-6 space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <Dialog.Content className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl p-6 space-y-5">
           <Dialog.Title className="text-xl font-black text-center">Crop Photo</Dialog.Title>
           <div className="flex justify-center">
             <div
@@ -83,6 +93,7 @@ export function PhotoCropModal({ open, file, onCancel, onComplete }: PhotoCropMo
               onPointerDown={onPointerDown}
               onPointerMove={onPointerMove}
               onPointerUp={onPointerUp}
+              onPointerLeave={onPointerUp}
             >
               {file && (
                 <img
@@ -93,14 +104,35 @@ export function PhotoCropModal({ open, file, onCancel, onComplete }: PhotoCropMo
                   style={{
                     width: displayW || "100%",
                     height: displayH || "100%",
-                    transform: `translate(-50%, -50%) translate(${safeOffset.x}px, ${safeOffset.y}px)`,
+                    transform: `translate(-50%, -50%) translate(${safeOffset.x}px, ${safeOffset.y}px) scale(${zoom})`,
+                    transformOrigin: "center",
+                    touchAction: "none",
                   }}
+                  onPointerDown={onPointerDown}
+                  onPointerMove={onPointerMove}
+                  onPointerUp={onPointerUp}
                 />
               )}
+              <div className="pointer-events-none absolute inset-0">
+                <div className="absolute inset-3 rounded-2xl border-4 border-[#38b6ff]" />
+                <div className="absolute inset-3 rounded-2xl overflow-hidden">
+                  <div className="absolute inset-0 grid grid-cols-3 grid-rows-3">
+                    <div className="border-r border-[#1f77ff]/80" />
+                    <div className="border-r border-[#1f77ff]/80" />
+                    <div />
+                    <div className="border-r border-[#1f77ff]/80 border-t" />
+                    <div className="border-r border-[#1f77ff]/80 border-t" />
+                    <div className="border-t border-[#1f77ff]/80" />
+                    <div className="border-r border-[#1f77ff]/80 border-t" />
+                    <div className="border-r border-[#1f77ff]/80 border-t" />
+                    <div className="border-t border-[#1f77ff]/80" />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-xs text-gray-500">Zoom</label>
+            <label className="text-sm font-semibold text-gray-600">Zoom</label>
             <input
               type="range"
               min="1"
@@ -108,14 +140,16 @@ export function PhotoCropModal({ open, file, onCancel, onComplete }: PhotoCropMo
               step="0.01"
               value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
-              className="w-full accent-roome-core"
+              className="w-full rounded-full appearance-none h-2"
+              style={{ background: zoomFill }}
             />
           </div>
           <div className="flex gap-2">
             <Button variant="secondary" className="flex-1" onClick={onCancel}>Cancel</Button>
             <Button className="flex-1" onClick={handleSave}>Use Photo</Button>
           </div>
-        </Dialog.Content>
+          </Dialog.Content>
+        </div>
       </Dialog.Portal>
     </Dialog.Root>
   );
