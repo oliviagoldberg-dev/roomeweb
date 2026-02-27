@@ -25,19 +25,18 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-xl mx-auto px-6 py-8 space-y-6">
-      {/* Header card */}
-      <div className="bg-white rounded-3xl shadow-sm overflow-hidden">
-        <div className="h-24 bg-gradient-to-r from-roome-deep via-roome-core to-roome-glow" />
-        <div className="px-6 pb-6">
-          <div className="-mt-12 mb-4">
-            <Avatar src={user.profileImageURL} name={user.name} size={80} />
+      {/* Header */}
+      <div className="bg-white rounded-3xl shadow-sm p-6">
+        <div className="flex items-center gap-4">
+          <Avatar src={user.profileImageURL} name={user.name} size={80} />
+          <div>
+            <h1 className="text-2xl font-black">{user.name}</h1>
+            <p className="text-gray-500">@{user.username}</p>
+            {user.occupation && <p className="text-sm text-gray-600 mt-1">{user.occupation}</p>}
+            {user.city && <Badge color="blue" className="mt-2">{user.city}</Badge>}
           </div>
-          <h1 className="text-2xl font-black">{user.name}</h1>
-          <p className="text-gray-500">@{user.username}</p>
-          {user.occupation && <p className="text-sm text-gray-600 mt-1">{user.occupation}</p>}
-          {user.city && <Badge color="blue" className="mt-2">{user.city}</Badge>}
-          {user.bio && <p className="text-sm text-gray-700 mt-3">{user.bio}</p>}
         </div>
+        {user.bio && <p className="text-sm text-gray-700 mt-4">{user.bio}</p>}
       </div>
 
       {/* Stats */}
