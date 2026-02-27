@@ -3,8 +3,10 @@ import { supabase } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
 export async function signUp(email: string, password: string, name = "") {
-  const emailRedirectTo =
-    typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined;
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    (typeof window !== "undefined" ? window.location.origin : "");
+  const emailRedirectTo = siteUrl ? `${siteUrl}/auth/callback` : undefined;
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
