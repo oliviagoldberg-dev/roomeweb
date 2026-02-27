@@ -11,10 +11,10 @@ interface InviteModalProps {
 }
 
 export function InviteModal({ open, code, onClose }: InviteModalProps) {
-  const appUrl = typeof window !== "undefined" ? window.location.origin : "https://roomeweb-prod3.vercel.app";
-  const inviteLink = `${appUrl}/signup?invite=${code}`;
-  const shareText = `Join me on ROOMe — the app for finding roommates. Use my invite code ${code} to sign up!`;
-  const shareBody = `${shareText}\n${inviteLink}`;
+  const appUrl = "https://roomeweb-prod3.vercel.app";
+  const inviteLink = `${appUrl}/?invite=${code}`;
+  const shareText = `Join me on ROOMe — the app for finding roommates. Use my invite code ${code} to sign up! ${inviteLink}`;
+  const shareBody = shareText;
 
   function copyCode() {
     navigator.clipboard.writeText(shareBody);
@@ -50,7 +50,7 @@ export function InviteModal({ open, code, onClose }: InviteModalProps) {
             {typeof navigator !== "undefined" && navigator.share ? (
               <Button
                 className="w-full"
-                onClick={() => navigator.share({ text: shareText, url: inviteLink })}
+                onClick={() => navigator.share({ text: shareBody, url: inviteLink })}
               >
                 <Share2 className="w-4 h-4" />
                 Share Invite
