@@ -173,12 +173,12 @@ export default function ProfileEditPage() {
       }
       const mainUrl = photoURLs[mainPhotoIdx] ?? photoURLs[0] ?? "";
       const reordered = mainUrl ? [mainUrl, ...photoURLs.filter((_, i) => i !== mainPhotoIdx)] : photoURLs;
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("You are not authenticated. Please log in again.");
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+      if (!authUser || authError) {
+        toast.error("Session expired. Please log in again.");
         return;
       }
-      await updateUser(uid, {
+      await updateUser(authUser.id, {
         name, username: normalizedUsername, phone, age,
         occupation, company, hometown, university,
         bio,
