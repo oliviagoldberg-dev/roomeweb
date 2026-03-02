@@ -19,12 +19,13 @@ function AuthCallbackClient() {
 
   useEffect(() => {
     async function handleCallback() {
+      let user = null;
+
       try {
         const code = searchParams.get("code");
         const tokenHash = searchParams.get("token_hash");
         const type = searchParams.get("type") as EmailOtpType | null;
 
-        let user = null;
         if (code) {
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
@@ -39,20 +40,21 @@ function AuthCallbackClient() {
         } else {
           throw new Error("Missing callback params");
         }
-
-        setFirebaseUser(user);
-        if (user) {
-          const userData = await getUser(user.id);
-          setRoommateUser(userData as RoommateUser | null);
-          if (userData && !(userData as RoommateUser).onboardingComplete) {
-            router.replace("/onboarding");
-            return;
-          }
-        }
-        router.replace("/home");
       } catch {
         setMessage("Email verification failed. Please try signing in again.");
+        return;
       }
+
+      setFirebaseUser(user);
+      if (user) {
+        const userData = await getUser(user.id);
+        setRoommateUser(userData as RoommateUser | null);
+        if (userData && !(userData as RoommateUser).onboardingComplete) {
+          router.replace("/onboarding");
+          return;
+        }
+      }
+      router.replace("/home");
     }
 
     void handleCallback();

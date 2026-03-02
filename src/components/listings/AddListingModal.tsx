@@ -50,6 +50,7 @@ export function AddListingModal({ open, onClose, defaultFolderId }: AddListingMo
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
 
   const [saving, setSaving] = useState(false);
+  const normalizeNumberInput = (value: string) => value.replace(/[^\d]/g, "");
 
   async function fetchPreview() {
     if (!url.trim()) return;
@@ -83,7 +84,7 @@ export function AddListingModal({ open, onClose, defaultFolderId }: AddListingMo
         city: user?.city ?? "",
         neighborhood: user?.neighborhood ?? "",
         rent: preview.rent ?? undefined,
-        folderId: defaultFolderId ?? null,
+        ...(defaultFolderId != null ? { folderId: defaultFolderId } : {}),
       } as Omit<SavedListing, "id">);
       void fetch("/api/notify-listing", {
         method: "POST",
@@ -92,8 +93,8 @@ export function AddListingModal({ open, onClose, defaultFolderId }: AddListingMo
       });
       toast.success("Listing saved!");
       handleClose();
-    } catch {
-      toast.error("Failed to save listing");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to save listing");
     } finally {
       setSaving(false);
     }
@@ -128,7 +129,7 @@ export function AddListingModal({ open, onClose, defaultFolderId }: AddListingMo
         amenities,
         photoURLs,
         notes,
-        folderId: defaultFolderId ?? null,
+        ...(defaultFolderId != null ? { folderId: defaultFolderId } : {}),
       } as Omit<SavedListing, "id">);
       void fetch("/api/notify-listing", {
         method: "POST",
@@ -137,8 +138,8 @@ export function AddListingModal({ open, onClose, defaultFolderId }: AddListingMo
       });
       toast.success("Listing posted!");
       handleClose();
-    } catch {
-      toast.error("Failed to save listing");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to save listing");
     } finally {
       setSaving(false);
     }
@@ -262,9 +263,9 @@ export function AddListingModal({ open, onClose, defaultFolderId }: AddListingMo
 
                 <div className="grid grid-cols-2 gap-3">
                   <Input label="Rent / mo" type="number" placeholder="1200" value={rent}
-                    onChange={(e) => setRent(e.target.value)} />
+                    onChange={(e) => setRent(normalizeNumberInput(e.target.value))} />
                   <Input label="Utilities / mo" type="number" placeholder="100" value={utilities}
-                    onChange={(e) => setUtilities(e.target.value)} />
+                    onChange={(e) => setUtilities(normalizeNumberInput(e.target.value))} />
                 </div>
 
                 <div className="space-y-1">

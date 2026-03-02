@@ -16,48 +16,9 @@ export async function signUp(email: string, password: string, name = "") {
   const user = data.user;
   if (!user) throw new Error("Failed to create user");
 
-  const username = email.split("@")[0].toLowerCase().replace(/[^a-z0-9_]/g, "");
-
-  await supabase.from("profiles").upsert({
-    id: user.id,
-    uid: user.id,
-    email,
-    name,
-    username,
-    phone: "",
-    age: "",
-    occupation: "",
-    company: "",
-    companyIndustry: "",
-    school: "",
-    university: "",
-    hometown: "",
-    city: "",
-    moveCity: "",
-    neighborhood: "",
-    neighborhoodPreferences: [],
-    bio: "",
-    budgetMin: 0,
-    budgetMax: 0,
-    beds: "",
-    baths: "",
-    leaseLength: "",
-    furnished: false,
-    hasAC: false,
-    hasLaundry: false,
-    hasParking: false,
-    hasPet: false,
-    smokes: false,
-    host: false,
-    cleanliness: 3,
-    sleepSchedule: "",
-    workFromHome: "",
-    connections: [],
-    likedBy: [],
-    photoURLs: [],
-    profileImageURL: "",
-    onboardingComplete: false,
-  });
+  // Profile is created after email verification via ensureProfile in useAuth.
+  // Attempting to upsert here fails because the user has no session yet
+  // (email not yet confirmed), so auth.uid() is null and RLS blocks the insert.
 
   return user;
 }

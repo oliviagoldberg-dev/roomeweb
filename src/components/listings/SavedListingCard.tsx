@@ -88,12 +88,19 @@ export function SavedListingCard({ listing, folders, onFolderChange }: SavedList
     }
   }
 
+  function parseMoney(value: string) {
+    const normalized = value.replace(/[^\d]/g, "");
+    if (!normalized) return null;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
   async function saveEdits() {
     setSavingEdit(true);
     try {
       const nextTitle = editTitle.trim() || listing.title;
-      const nextRent = editRent ? Number(editRent) : null;
-      const nextUtilities = editUtilities ? Number(editUtilities) : null;
+      const nextRent = parseMoney(editRent);
+      const nextUtilities = parseMoney(editUtilities);
       await updateListing(listing.id, {
         title: nextTitle,
         rent: nextRent,
@@ -116,7 +123,9 @@ export function SavedListingCard({ listing, folders, onFolderChange }: SavedList
   const isExternal = listing.url && listing.source !== "Manual";
   const sourceLabel = formatSourceLabel(listing.source);
   const priceLabel =
-    displayRent != null ? `$${displayRent.toLocaleString()}/mo` : "Rent not set";
+    displayRent != null && Number.isFinite(displayRent)
+      ? `$${displayRent.toLocaleString()}/mo`
+      : "Rent not set";
   const priceBgClass = displayRent != null ? "bg-roome-core/10" : "bg-roome-core/30";
 
   return (
@@ -217,8 +226,16 @@ export function SavedListingCard({ listing, folders, onFolderChange }: SavedList
             <div className="space-y-3">
               <Input label="Title / Address" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
               <div className="grid grid-cols-2 gap-3">
-                <Input label="Rent" value={editRent} onChange={(e) => setEditRent(e.target.value)} />
-                <Input label="Utilities" value={editUtilities} onChange={(e) => setEditUtilities(e.target.value)} />
+                <Input
+                  label="Rent"
+                  value={editRent}
+                  onChange={(e) => setEditRent(e.target.value.replace(/[^\d]/g, ""))}
+                />
+                <Input
+                  label="Utilities"
+                  value={editUtilities}
+                  onChange={(e) => setEditUtilities(e.target.value.replace(/[^\d]/g, ""))}
+                />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <select

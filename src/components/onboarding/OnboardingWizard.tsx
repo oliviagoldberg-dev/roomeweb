@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
 import { uploadOnboardingPhotos } from "@/lib/firebase/storage";
-import { updateUser } from "@/lib/firebase/firestore";
+import { isUsernameAvailable, updateUser } from "@/lib/firebase/firestore";
 import { ProgressBar } from "./ProgressBar";
 import { Button } from "@/components/ui/Button";
 import { PhotoCropModal } from "@/components/ui/PhotoCropModal";
@@ -100,6 +100,14 @@ export function OnboardingWizard() {
 
   async function saveAndFinish() {
     if (!uid) { toast.error("Not logged in"); return; }
+    const normalizedUsername = username.trim().toLowerCase();
+    if (normalizedUsername) {
+      const available = await isUsernameAvailable(normalizedUsername, uid);
+      if (!available) {
+        toast.error("That username is already taken.");
+        return;
+      }
+    }
     setSaving(true);
     try {
       if (photoFiles.length < 5) {
@@ -112,7 +120,7 @@ export function OnboardingWizard() {
       const reordered = mainUrl ? [mainUrl, ...photoURLs.filter((_, i) => i !== mainPhotoIdx)] : photoURLs;
 
       const data = {
-        uid, username, phone, age,
+        uid, username: normalizedUsername, phone, age,
         occupation, company, hometown, university,
         hasPet, smokes, host, workFromHome, cleanliness, sleepSchedule,
         budgetMin, budgetMax, beds, baths, furnished, leaseLength,

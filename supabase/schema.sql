@@ -46,6 +46,27 @@ create table if not exists profiles (
   "likedBy" text[] default '{}',
   "onboardingComplete" boolean default false,
   "inviteCode" text,
+  "notifyMatches" boolean default true,
+  "notifyMessages" boolean default true,
+  "notifyListings" boolean default true,
+  "notifyFriendRequests" boolean default true,
+  "createdAt" timestamptz default now()
+);
+
+-- Listing Folders
+create table if not exists listingfolders (
+  "id" uuid primary key default uuid_generate_v4(),
+  "ownerUid" uuid,
+  "name" text,
+  "createdAt" timestamptz default now()
+);
+
+-- Folder Shares
+create table if not exists foldershares (
+  "id" uuid primary key default uuid_generate_v4(),
+  "folderId" uuid references listingfolders(id) on delete cascade,
+  "ownerUid" uuid,
+  "sharedWithUid" uuid,
   "createdAt" timestamptz default now()
 );
 
@@ -53,6 +74,7 @@ create table if not exists profiles (
 create table if not exists listings (
   "id" uuid primary key default uuid_generate_v4(),
   "ownerUid" uuid,
+  "folderId" uuid references listingfolders(id) on delete set null,
   "url" text,
   "title" text,
   "imageUrl" text,
@@ -130,6 +152,8 @@ create table if not exists inviteCodes (
 -- RLS
 alter table profiles enable row level security;
 alter table listings enable row level security;
+alter table listingfolders enable row level security;
+alter table foldershares enable row level security;
 alter table conversations enable row level security;
 alter table messages enable row level security;
 alter table friendships enable row level security;
@@ -137,28 +161,86 @@ alter table friendRequests enable row level security;
 alter table notifications enable row level security;
 alter table inviteCodes enable row level security;
 
--- Policies (single-user friendly)
-create policy "profiles own row" on profiles
-  for all using (auth.uid()::text = id::text) with check (auth.uid()::text = id::text);
+-- ─── Profiles ────────────────────────────────────────────────────────────────
+-- All authenticated users can read all profiles (needed for browse/discover)
+create policy "profiles select all" on profiles
+  for select using (auth.role() = 'authenticated');
+-- Users can only insert/update/delete their own profile
+create policy "profiles insert own" on profiles
+  for insert with check (auth.uid()::text = id::text);
+create policy "profiles update own" on profiles
+  for update using (auth.uid()::text = id::text) with check (auth.uid()::text = id::text);
+create policy "profiles delete own" on profiles
+  for delete using (auth.uid()::text = id::text);
 
-create policy "listings own row" on listings
+-- ─── Listings ─────────────────────────────────────────────────────────────────
+-- Authenticated users can read all listings (for notifications + shared folders)
+create policy "listings select all" on listings
+  for select using (auth.role() = 'authenticated');
+create policy "listings insert own" on listings
+  for insert with check (auth.uid()::text = "ownerUid"::text);
+create policy "listings update own" on listings
+  for update using (auth.uid()::text = "ownerUid"::text) with check (auth.uid()::text = "ownerUid"::text);
+create policy "listings delete own" on listings
+  for delete using (auth.uid()::text = "ownerUid"::text);
+
+-- ─── Listing Folders ──────────────────────────────────────────────────────────
+create policy "listingfolders select" on listingfolders
+  for select using (
+    auth.uid()::text = "ownerUid"::text
+    or exists (
+      select 1 from foldershares
+      where "folderId" = listingfolders.id
+        and "sharedWithUid"::text = auth.uid()::text
+    )
+  );
+create policy "listingfolders own" on listingfolders
   for all using (auth.uid()::text = "ownerUid"::text) with check (auth.uid()::text = "ownerUid"::text);
 
+-- ─── Folder Shares ────────────────────────────────────────────────────────────
+create policy "foldershares select" on foldershares
+  for select using (
+    auth.uid()::text = "ownerUid"::text
+    or auth.uid()::text = "sharedWithUid"::text
+  );
+create policy "foldershares own" on foldershares
+  for all using (auth.uid()::text = "ownerUid"::text) with check (auth.uid()::text = "ownerUid"::text);
+
+-- ─── Conversations ────────────────────────────────────────────────────────────
 create policy "convos participant" on conversations
   for all using (auth.uid()::text = any("participants")) with check (auth.uid()::text = any("participants"));
 
-create policy "messages participant" on messages
-  for all using (auth.uid()::text = "senderUID"::text) with check (auth.uid()::text = "senderUID"::text);
+-- ─── Messages ─────────────────────────────────────────────────────────────────
+-- Participants can read all messages in their conversations
+create policy "messages select" on messages
+  for select using (
+    exists (
+      select 1 from conversations
+      where conversations.id = messages."convoId"
+        and auth.uid()::text = any(conversations."participants")
+    )
+  );
+create policy "messages insert own" on messages
+  for insert with check (auth.uid()::text = "senderUID"::text);
+create policy "messages update own" on messages
+  for update using (auth.uid()::text = "senderUID"::text) with check (auth.uid()::text = "senderUID"::text);
 
+-- ─── Friendships ──────────────────────────────────────────────────────────────
 create policy "friendships participant" on friendships
   for all using (auth.uid()::text = any("users")) with check (auth.uid()::text = any("users"));
 
+-- ─── Friend Requests ──────────────────────────────────────────────────────────
 create policy "friendrequests sender_or_receiver" on friendRequests
   for all using (auth.uid()::text = "fromUID"::text or auth.uid()::text = "toUID"::text)
   with check (auth.uid()::text = "fromUID"::text or auth.uid()::text = "toUID"::text);
 
+-- ─── Notifications ────────────────────────────────────────────────────────────
 create policy "notifications receiver" on notifications
   for all using (auth.uid()::text = "toUID"::text) with check (auth.uid()::text = "toUID"::text);
 
-create policy "invite codes owner" on inviteCodes
+-- ─── Invite Codes ─────────────────────────────────────────────────────────────
+-- Anyone authenticated can read invite codes (needed to validate them at signup)
+create policy "invite codes select" on inviteCodes
+  for select using (auth.role() = 'authenticated');
+create policy "invite codes own" on inviteCodes
   for all using (auth.uid()::text = "uid"::text) with check (auth.uid()::text = "uid"::text);

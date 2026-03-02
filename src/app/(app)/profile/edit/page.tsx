@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { updateUser } from "@/lib/firebase/firestore";
+import { isUsernameAvailable, updateUser } from "@/lib/firebase/firestore";
 import { uploadProfilePhotos } from "@/lib/firebase/storage";
 import { changePassword } from "@/lib/firebase/auth";
 import { supabase } from "@/lib/supabase/client";
@@ -153,6 +153,14 @@ export default function ProfileEditPage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!uid) return;
+    const normalizedUsername = username.trim().toLowerCase();
+    if (normalizedUsername) {
+      const available = await isUsernameAvailable(normalizedUsername, uid);
+      if (!available) {
+        toast.error("That username is already taken.");
+        return;
+      }
+    }
     setSaving(true);
     try {
       if (displayPhotos.length < 5) {
@@ -171,7 +179,7 @@ export default function ProfileEditPage() {
         return;
       }
       await updateUser(uid, {
-        name, username, phone, age,
+        name, username: normalizedUsername, phone, age,
         occupation, company, hometown, university,
         bio,
         hasPet, smokes, host, workFromHome, cleanliness, sleepSchedule,
@@ -638,9 +646,7 @@ function MultiSelect({
           key={opt}
           type="button"
           onClick={() => onToggle(opt)}
-          className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
-            selected.includes(opt) ? "bg-roome-core text-white" : "bg-roome-pale text-roome-deep"
-          }`}
+          className="px-3 py-1.5 rounded-xl text-sm font-medium transition-colors bg-roome-core/20 text-roome-black"
         >
           {opt}
         </button>
@@ -687,7 +693,7 @@ function NeighborhoodInput({
               key={n}
               type="button"
               onClick={() => onRemove(n)}
-              className="px-3 py-1.5 rounded-xl text-sm font-medium bg-roome-core text-white"
+              className="px-3 py-1.5 rounded-xl text-sm font-medium bg-roome-core/20 text-roome-black"
             >
               {n}
             </button>
