@@ -646,7 +646,9 @@ function MultiSelect({
           key={opt}
           type="button"
           onClick={() => onToggle(opt)}
-          className="px-3 py-1.5 rounded-xl text-sm font-medium transition-colors bg-roome-core/20 text-roome-black"
+          className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
+            selected.includes(opt) ? "bg-roome-core text-white" : "bg-roome-core/20 text-roome-black"
+          }`}
         >
           {opt}
         </button>
