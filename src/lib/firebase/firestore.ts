@@ -336,7 +336,7 @@ export function listenToFriendships(uid: string, cb: (rows: any[]) => void) {
 export function listenToFriendRequests(uid: string, cb: (rows: any[]) => void) {
   const fetch = async () => {
     const { data } = await supabase
-      .from("friend_requests")
+      .from("friendrequests")
       .select("*")
       .eq("toUID", uid)
       .eq("status", "pending");
@@ -344,8 +344,8 @@ export function listenToFriendRequests(uid: string, cb: (rows: any[]) => void) {
   };
   fetch();
   const channel = supabase
-    .channel(`friend_requests:${uid}`)
-    .on("postgres_changes", { event: "*", schema: "public", table: "friend_requests" }, () => fetch())
+    .channel(`friendrequests:${uid}`)
+    .on("postgres_changes", { event: "*", schema: "public", table: "friendrequests" }, () => fetch())
     .subscribe();
   return () => {
     void supabase.removeChannel(channel);
@@ -353,7 +353,7 @@ export function listenToFriendRequests(uid: string, cb: (rows: any[]) => void) {
 }
 
 export async function sendFriendRequest(fromUID: string, toUID: string) {
-  await supabase.from("friend_requests").insert({
+  await supabase.from("friendrequests").insert({
     fromUID,
     toUID,
     status: "pending",
@@ -378,7 +378,7 @@ export async function sendFriendRequest(fromUID: string, toUID: string) {
 }
 
 export async function acceptFriendRequest(requestId: string, myUid: string, fromUid: string) {
-  await supabase.from("friend_requests").update({ status: "accepted" }).eq("id", requestId);
+  await supabase.from("friendrequests").update({ status: "accepted" }).eq("id", requestId);
   await supabase.from("friendships").insert({
     users: [myUid, fromUid],
     createdAt: new Date().toISOString(),
@@ -386,7 +386,7 @@ export async function acceptFriendRequest(requestId: string, myUid: string, from
 }
 
 export async function declineFriendRequest(requestId: string) {
-  await supabase.from("friend_requests").update({ status: "declined" }).eq("id", requestId);
+  await supabase.from("friendrequests").update({ status: "declined" }).eq("id", requestId);
 }
 
 // ─── Invite Codes ─────────────────────────────────────────────────────────────

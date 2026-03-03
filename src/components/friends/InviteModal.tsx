@@ -48,7 +48,7 @@ export function InviteModal({ open, code, onClose }: InviteModalProps) {
     <Dialog.Root open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-        <Dialog.Content className="fixed inset-x-4 top-1/4 sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-sm bg-white rounded-3xl shadow-2xl z-50 p-8 space-y-6 text-center">
+        <Dialog.Content className="fixed inset-x-4 top-1/4 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-sm bg-white rounded-3xl shadow-2xl z-50 p-8 space-y-6 text-center">
           <Dialog.Title className="text-2xl font-black">Invite Friends</Dialog.Title>
           <p className="text-gray-500 text-sm">
             Share your invite code and get connected when they sign up.
