@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -50,6 +50,9 @@ export default function ProfileEditPage() {
   // Personal
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [checkingUsername, setCheckingUsername] = useState(false);
+  const usernameTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [phone, setPhone] = useState("");
   const [age, setAge] = useState("");
 
@@ -126,6 +129,23 @@ export default function ProfileEditPage() {
     setExistingPhotos(photos);
     setMainPhotoIdx(0);
   }, [user]);
+
+  useEffect(() => {
+    const normalized = username.trim().toLowerCase();
+    const original = (user?.username ?? "").toLowerCase();
+    if (!normalized || normalized === original) {
+      setUsernameAvailable(null);
+      setCheckingUsername(false);
+      return;
+    }
+    setCheckingUsername(true);
+    if (usernameTimer.current) clearTimeout(usernameTimer.current);
+    usernameTimer.current = setTimeout(async () => {
+      const available = await isUsernameAvailable(normalized, uid ?? "");
+      setUsernameAvailable(available);
+      setCheckingUsername(false);
+    }, 500);
+  }, [username, uid, user?.username]);
 
   function handleProfilePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -359,8 +379,33 @@ export default function ProfileEditPage() {
         <Section title="Personal Info">
           <Field label="Full Name" placeholder="Your full name" value={name} onChange={setName} labelClassName="text-roome-black" />
           <ReadonlyField label="Email" value={user?.email ?? ""} labelClassName="text-roome-black" />
-          <Field label="Username" placeholder="@yourhandle" value={username} labelClassName="text-roome-black"
-            onChange={(v) => setUsername(v.toLowerCase().replace(/\s/g, ""))} />
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-roome-black">Username</label>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="@yourhandle"
+                value={username}
+                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ""))}
+                className="w-full px-4 py-3 rounded-2xl bg-roome-core/20 text-roome-black placeholder-roome-black/60 border border-transparent focus:outline-none focus:ring-2 focus:ring-roome-core/40 focus:bg-white transition pr-10"
+              />
+              {checkingUsername && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">…</span>
+              )}
+              {!checkingUsername && usernameAvailable === true && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 text-sm font-bold">✓</span>
+              )}
+              {!checkingUsername && usernameAvailable === false && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 text-sm font-bold">✗</span>
+              )}
+            </div>
+            {!checkingUsername && usernameAvailable === false && (
+              <p className="text-xs text-red-500">That username is already taken.</p>
+            )}
+            {!checkingUsername && usernameAvailable === true && (
+              <p className="text-xs text-green-500">Username is available!</p>
+            )}
+          </div>
           <Field label="Phone Number" placeholder="+1 (555) 000-0000" value={phone} onChange={setPhone} type="tel" labelClassName="text-roome-black" />
           <Field label="Age" placeholder="e.g. 24" value={age} onChange={setAge} type="number" labelClassName="text-roome-black" />
         </Section>
@@ -509,7 +554,7 @@ export default function ProfileEditPage() {
           ) : null}
         </Section>
 
-        <Button type="submit" loading={saving} className="w-full" size="lg">Save Changes</Button>
+        <Button type="submit" loading={saving} disabled={usernameAvailable === false} className="w-full" size="lg">Save Changes</Button>
       </form>
       <PhotoCropModal
         open={cropOpen}
