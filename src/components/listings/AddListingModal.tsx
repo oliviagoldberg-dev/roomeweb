@@ -210,7 +210,8 @@ export function AddListingModal({ open, onClose, defaultFolderId, onSaved }: Add
           </div>
 
           {/* Body */}
-          <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-6 space-y-4"
+            style={{ WebkitOverflowScrolling: "touch" }}>
             {tab === "url" ? (
               <>
                 <p className="text-sm text-gray-500">
@@ -251,7 +252,7 @@ export function AddListingModal({ open, onClose, defaultFolderId, onSaved }: Add
                     </div>
                   )}
                   <label className="block">
-                    <span className="inline-block bg-[#38b6ff]/20 text-gray-900 text-sm font-semibold px-4 py-2 rounded-xl cursor-pointer hover:opacity-80 transition">
+                    <span className="inline-block bg-[#38b6ff]/15 text-[#38b6ff] text-sm font-semibold px-4 py-2 rounded-xl cursor-pointer hover:opacity-80 transition">
                       {photoFiles.length ? `${photoFiles.length} photo${photoFiles.length > 1 ? "s" : ""} selected` : "Upload Photos"}
                     </span>
                     <input type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoChange} />
@@ -281,7 +282,7 @@ export function AddListingModal({ open, onClose, defaultFolderId, onSaved }: Add
                     {BEDS_OPTIONS.map((opt) => (
                       <button key={opt} type="button" onClick={() => setBeds(opt)}
                         className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
-                          beds === opt ? "bg-roome-core text-white" : "bg-[#38b6ff]/20 text-gray-900"
+                          beds === opt ? "bg-roome-core text-white" : "bg-[#38b6ff]/15 text-[#38b6ff]"
                         }`}>
                         {opt}
                       </button>
@@ -295,7 +296,7 @@ export function AddListingModal({ open, onClose, defaultFolderId, onSaved }: Add
                     {BATHS_OPTIONS.map((opt) => (
                       <button key={opt} type="button" onClick={() => setBaths(opt)}
                         className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
-                          baths === opt ? "bg-roome-core text-white" : "bg-[#38b6ff]/20 text-gray-900"
+                          baths === opt ? "bg-roome-core text-white" : "bg-[#38b6ff]/15 text-[#38b6ff]"
                         }`}>
                         {opt}
                       </button>
@@ -309,7 +310,7 @@ export function AddListingModal({ open, onClose, defaultFolderId, onSaved }: Add
                     {LEASE_LENGTH_OPTIONS.map((opt) => (
                       <button key={opt} type="button" onClick={() => setLeaseLength(opt)}
                         className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
-                          leaseLength === opt ? "bg-roome-core text-white" : "bg-[#38b6ff]/20 text-gray-900"
+                          leaseLength === opt ? "bg-roome-core text-white" : "bg-[#38b6ff]/15 text-[#38b6ff]"
                         }`}>
                         {opt}
                       </button>
@@ -329,7 +330,7 @@ export function AddListingModal({ open, onClose, defaultFolderId, onSaved }: Add
                     {AMENITIES_OPTIONS.map((a) => (
                       <button key={a} type="button" onClick={() => toggleAmenity(a)}
                         className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
-                          amenities.includes(a) ? "bg-roome-core text-white" : "bg-[#38b6ff]/20 text-gray-900"
+                          amenities.includes(a) ? "bg-roome-core text-white" : "bg-[#38b6ff]/15 text-[#38b6ff]"
                         }`}>
                         {a}
                       </button>
