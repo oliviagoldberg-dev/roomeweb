@@ -33,7 +33,7 @@ export function InviteModal({ open, code, onClose }: InviteModalProps) {
     if (sharing) return;
     setSharing(true);
     try {
-      await navigator.share({ text: shareBody, url: inviteLink });
+      await navigator.share({ text: shareBody });
     } catch (err: any) {
       // AbortError = user dismissed the share sheet, not a real error
       if (err?.name !== "AbortError") {
