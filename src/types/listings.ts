@@ -28,4 +28,7 @@ export interface LinkPreviewResult {
   description: string;
   source: string;
   rent?: number;
+  beds?: string;
+  baths?: string;
+  address?: string;
 }

@@ -48,6 +48,57 @@ function extractPrice(html: string): number | null {
   return null;
 }
 
+function extractBeds(html: string): string {
+  const jsonLd = html.match(/"numberOfBedrooms"\s*:\s*"?(\d+)"?/i);
+  if (jsonLd) {
+    const n = parseInt(jsonLd[1]);
+    if (n === 0) return "Studio";
+    return n >= 4 ? "4+" : String(n);
+  }
+  if (/\bstudio\b/i.test(html)) return "Studio";
+  const match = html.match(/\b(\d+)\s*(?:bed(?:room)?s?|br)\b/i);
+  if (match) {
+    const n = parseInt(match[1]);
+    return n >= 4 ? "4+" : String(n);
+  }
+  return "";
+}
+
+function extractBaths(html: string): string {
+  const jsonLd = html.match(/"numberOfBathroomsTotal"\s*:\s*"?(\d+(?:\.\d+)?)"?/i);
+  if (jsonLd) {
+    const n = parseFloat(jsonLd[1]);
+    if (n >= 2) return "2+";
+    if (n === 1.5) return "1.5";
+    return "1";
+  }
+  const match = html.match(/\b(\d+(?:\.\d+)?)\s*(?:bath(?:room)?s?|ba)\b/i);
+  if (match) {
+    const n = parseFloat(match[1]);
+    if (n >= 2) return "2+";
+    if (n === 1.5) return "1.5";
+    return "1";
+  }
+  return "";
+}
+
+function extractAddress(html: string): string {
+  const street = html.match(/"streetAddress"\s*:\s*"([^"]+)"/i);
+  const city = html.match(/"addressLocality"\s*:\s*"([^"]+)"/i);
+  const state = html.match(/"addressRegion"\s*:\s*"([^"]+)"/i);
+  if (street) {
+    let addr = street[1];
+    if (city) addr += `, ${city[1]}`;
+    if (state) addr += `, ${state[1]}`;
+    return addr;
+  }
+  const itemProp =
+    html.match(/itemprop=["']streetAddress["'][^>]+content=["']([^"']+)["']/i) ||
+    html.match(/itemprop=["']streetAddress["'][^>]*>([^<]+)</i);
+  if (itemProp) return itemProp[1].trim();
+  return "";
+}
+
 function normalizeImageUrl(raw: string, baseUrl: string): string {
   if (!raw) return "";
   if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
@@ -124,20 +175,24 @@ export async function POST(req: Request) {
     let imageUrl = normalizeImageUrl(rawImage, url) || extractFirstImage(html, hostname);
 
     let rent = extractPrice(html) ?? undefined;
+    let beds = extractBeds(html);
+    let baths = extractBaths(html);
+    let address = extractAddress(html);
 
-    if (!imageUrl) {
+    if (!imageUrl || !beds || !baths || !address) {
       // Fallback: fetch via jina.ai (helps with some sites like Zillow)
       const stripped = url.replace(/^https?:\/\//, "");
       const jinaHtml = await fetchHtml(`https://r.jina.ai/https://${stripped}`);
       if (jinaHtml) {
-        imageUrl = extractFirstImage(jinaHtml, hostname);
-        if (rent == null) {
-          rent = extractPrice(jinaHtml) ?? undefined;
-        }
+        if (!imageUrl) imageUrl = extractFirstImage(jinaHtml, hostname);
+        if (rent == null) rent = extractPrice(jinaHtml) ?? undefined;
+        if (!beds) beds = extractBeds(jinaHtml);
+        if (!baths) baths = extractBaths(jinaHtml);
+        if (!address) address = extractAddress(jinaHtml);
       }
     }
 
-    return NextResponse.json({ title, description, imageUrl, source, rent });
+    return NextResponse.json({ title, description, imageUrl, source, rent, beds, baths, address });
   } catch {
     return NextResponse.json({ error: "Failed to fetch preview" }, { status: 500 });
   }

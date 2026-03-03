@@ -66,6 +66,7 @@ export function AddListingModal({ open, onClose, defaultFolderId, onSaved }: Add
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setPreview(data as LinkPreviewResult);
+      if (data.address && !address) setAddress(data.address);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Could not fetch preview");
     } finally {
