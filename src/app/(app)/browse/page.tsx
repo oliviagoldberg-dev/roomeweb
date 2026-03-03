@@ -43,7 +43,7 @@ export default function BrowsePage() {
         </Button>
       </div>
 
-      {!roommateUser?.city && (
+      {!roommateUser?.moveCity && !roommateUser?.city && (
         <div className="bg-white rounded-2xl p-4 text-sm text-gray-600 mb-4 shadow-sm border border-gray-100 flex items-center justify-between gap-3">
           <span>Complete your profile to browse roommates in your city.</span>
           <Button

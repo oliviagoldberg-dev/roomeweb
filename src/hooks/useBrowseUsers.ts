@@ -10,7 +10,7 @@ export function useBrowseUsers() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const city = roommateUser?.city;
+    const city = roommateUser?.moveCity || roommateUser?.city;
     const uidSafe = uid ?? "";
     if (!uidSafe || !city) { setLoading(false); return; }
 
@@ -24,7 +24,7 @@ export function useBrowseUsers() {
       setLoading(false);
     }
     void load(city, uidSafe);
-  }, [uid, roommateUser?.city]);
+  }, [uid, roommateUser?.moveCity, roommateUser?.city]);
 
   return { users, setUsers, loading };
 }
