@@ -22,7 +22,7 @@ export async function uploadOnboardingPhotos(uid: string, files: File[]): Promis
 }
 
 export async function uploadProfilePhoto(uid: string, file: File): Promise<string> {
-  return uploadToBucket(`users/${uid}/profile.jpg`, file);
+  return uploadToBucket(`users/${uid}/profile_${Date.now()}.jpg`, file);
 }
 
 export async function uploadProfilePhotos(uid: string, files: File[]): Promise<string[]> {
