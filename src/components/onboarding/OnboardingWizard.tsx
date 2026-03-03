@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
 import { uploadOnboardingPhotos } from "@/lib/firebase/storage";
-import { isUsernameAvailable, updateUser } from "@/lib/firebase/firestore";
+import { isUsernameAvailable } from "@/lib/firebase/firestore";
+import { supabase } from "@/lib/supabase/client";
 import { ProgressBar } from "./ProgressBar";
 import { Button } from "@/components/ui/Button";
 import { PhotoCropModal } from "@/components/ui/PhotoCropModal";
@@ -131,7 +132,20 @@ export function OnboardingWizard() {
         likedBy: [],
         onboardingComplete: true,
       };
-      await updateUser(uid, data);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Session expired. Please log in again.");
+      const res = await fetch("/api/update-profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ data }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? "Failed to save");
+      }
       setRoommateUser({ ...data, id: uid, name: roommateUser?.name ?? "", email: roommateUser?.email ?? "" } as never);
       router.push("/home");
     } catch (err: unknown) {

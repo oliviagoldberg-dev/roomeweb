@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { isUsernameAvailable } from "@/lib/firebase/firestore";
-import { uploadProfilePhotos } from "@/lib/firebase/storage";
+import { uploadProfilePhoto, uploadProfilePhotos } from "@/lib/firebase/storage";
 import { changePassword } from "@/lib/firebase/auth";
 import { supabase } from "@/lib/supabase/client";
 import { useAuthStore } from "@/store/authStore";
@@ -30,15 +30,22 @@ export default function ProfileEditPage() {
   const setRoommateUser = useAuthStore((s) => s.setRoommateUser);
   const { user, loading } = useCurrentUser();
 
-  // Photos
+  // Profile photo (single avatar)
+  const [profilePhotoPreview, setProfilePhotoPreview] = useState<string>("");
+  const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
+
+  // Gallery photos (5 photos)
   const [existingPhotos, setExistingPhotos] = useState<string[]>([]);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [mainPhotoIdx, setMainPhotoIdx] = useState(0);
   const [cropQueue, setCropQueue] = useState<File[]>([]);
   const [cropIndex, setCropIndex] = useState(0);
+
+  // Shared crop modal
   const [cropFile, setCropFile] = useState<File | null>(null);
   const [cropOpen, setCropOpen] = useState(false);
+  const [cropTarget, setCropTarget] = useState<"profile" | "gallery">("profile");
 
   // Personal
   const [name, setName] = useState("");
@@ -114,12 +121,21 @@ export default function ProfileEditPage() {
     setNeighborhood(user.neighborhood ?? "");
     const existingNeighborhoods = user.neighborhoodPreferences ?? (user.neighborhood ? [user.neighborhood] : []);
     setNeighborhoods(existingNeighborhoods);
+    setProfilePhotoPreview(user.profileImageURL ?? "");
     const photos = user.photoURLs ?? [];
     setExistingPhotos(photos);
     setMainPhotoIdx(0);
   }, [user]);
 
-  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleProfilePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCropTarget("profile");
+    setCropFile(file);
+    setCropOpen(true);
+  }
+
+  function handleGalleryPhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []).slice(0, 5);
     if (!files.length) return;
     setPhotoFiles([]);
@@ -127,6 +143,7 @@ export default function ProfileEditPage() {
     setMainPhotoIdx(0);
     setCropQueue(files);
     setCropIndex(0);
+    setCropTarget("gallery");
     setCropFile(files[0]);
     setCropOpen(true);
   }
@@ -164,8 +181,15 @@ export default function ProfileEditPage() {
     }
     setSaving(true);
     try {
+      // Upload profile photo if changed
+      let profileImageURL = profilePhotoPreview || user?.profileImageURL || "";
+      if (profilePhotoFile) {
+        profileImageURL = await uploadProfilePhoto(uid, profilePhotoFile);
+      }
+
+      // Upload gallery photos if changed
       if (displayPhotos.length < 5) {
-        toast.error("Please upload 5 photos");
+        toast.error("Please upload 5 gallery photos");
         return;
       }
       let photoURLs = existingPhotos;
@@ -195,8 +219,8 @@ export default function ProfileEditPage() {
             hasAC, hasLaundry, hasParking, moveCity,
             neighborhood: neighborhoods[0] ?? neighborhood,
             neighborhoodPreferences: neighborhoods,
+            profileImageURL,
             photoURLs: reordered,
-            profileImageURL: reordered[0] ?? user?.profileImageURL ?? "",
           },
         }),
       });
@@ -249,6 +273,24 @@ export default function ProfileEditPage() {
       </div>
 
       <form onSubmit={handleSave} className="space-y-8">
+
+        {/* ─── Profile Picture ─────────────────────────────── */}
+        <Section title="Profile Picture">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-28 h-28 rounded-full overflow-hidden bg-roome-core/20 flex items-center justify-center">
+              {profilePhotoPreview
+                ? <img src={profilePhotoPreview} alt="" className="w-full h-full object-cover" />
+                : <span className="text-4xl text-roome-deep/30">+</span>
+              }
+            </div>
+            <label className="cursor-pointer">
+              <span className="inline-block bg-roome-core/20 text-roome-black font-semibold px-5 py-2.5 rounded-2xl hover:opacity-80 transition text-sm">
+                {profilePhotoPreview ? "Change Photo" : "Add Photo"}
+              </span>
+              <input type="file" accept="image/*" className="hidden" onChange={handleProfilePhotoChange} />
+            </label>
+          </div>
+        </Section>
 
         {/* ─── Photos ─────────────────────────────────────── */}
         <Section title="Photos">
@@ -308,7 +350,7 @@ export default function ProfileEditPage() {
               <span className="inline-block bg-roome-core/20 text-roome-black font-semibold px-6 py-3 rounded-2xl cursor-pointer hover:opacity-80 transition text-sm">
                 {photoFiles.length ? `${photoFiles.length} photo${photoFiles.length > 1 ? "s" : ""} selected` : "Choose Photos (up to 5)"}
               </span>
-              <input type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoChange} />
+              <input type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryPhotoChange} />
             </label>
           </div>
         </Section>
@@ -472,17 +514,24 @@ export default function ProfileEditPage() {
       <PhotoCropModal
         open={cropOpen}
         file={cropFile}
-        onCancel={() => setCropOpen(false)}
+        onCancel={() => { setCropOpen(false); setCropFile(null); }}
         onComplete={(file, previewUrl) => {
-          setPhotoFiles((prev) => [...prev, file]);
-          setPhotoPreviews((prev) => [...prev, previewUrl]);
-          const nextIndex = cropIndex + 1;
-          if (nextIndex < cropQueue.length) {
-            setCropIndex(nextIndex);
-            setCropFile(cropQueue[nextIndex]);
-          } else {
+          if (cropTarget === "profile") {
+            setProfilePhotoFile(file);
+            setProfilePhotoPreview(previewUrl);
             setCropOpen(false);
             setCropFile(null);
+          } else {
+            setPhotoFiles((prev) => [...prev, file]);
+            setPhotoPreviews((prev) => [...prev, previewUrl]);
+            const nextIndex = cropIndex + 1;
+            if (nextIndex < cropQueue.length) {
+              setCropIndex(nextIndex);
+              setCropFile(cropQueue[nextIndex]);
+            } else {
+              setCropOpen(false);
+              setCropFile(null);
+            }
           }
         }}
       />
