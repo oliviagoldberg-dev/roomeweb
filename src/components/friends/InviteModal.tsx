@@ -12,7 +12,7 @@ interface InviteModalProps {
 }
 
 export function InviteModal({ open, code, onClose }: InviteModalProps) {
-  const appUrl = "https://roomeweb-prod3.vercel.app";
+  const appUrl = "https://roomeofficial.com";
   const inviteLink = `${appUrl}/?invite=${code}`;
   const shareText = `Join me on ROOMe — the app for finding roommates. Use my invite code ${code} to sign up! ${inviteLink}`;
   const shareBody = shareText;
