@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Button } from "@/components/ui/Button";
@@ -15,6 +16,7 @@ export function InviteModal({ open, code, onClose }: InviteModalProps) {
   const inviteLink = `${appUrl}/?invite=${code}`;
   const shareText = `Join me on ROOMe — the app for finding roommates. Use my invite code ${code} to sign up! ${inviteLink}`;
   const shareBody = shareText;
+  const [sharing, setSharing] = useState(false);
 
   function copyCode() {
     navigator.clipboard.writeText(shareBody);
@@ -25,6 +27,21 @@ export function InviteModal({ open, code, onClose }: InviteModalProps) {
     if (typeof window === "undefined") return;
     const body = encodeURIComponent(shareBody);
     window.location.href = `sms:?body=${body}`;
+  }
+
+  async function handleShare() {
+    if (sharing) return;
+    setSharing(true);
+    try {
+      await navigator.share({ text: shareBody, url: inviteLink });
+    } catch (err: any) {
+      // AbortError = user dismissed the share sheet, not a real error
+      if (err?.name !== "AbortError") {
+        toast.error("Could not share. Try copying instead.");
+      }
+    } finally {
+      setSharing(false);
+    }
   }
 
   return (
@@ -50,7 +67,8 @@ export function InviteModal({ open, code, onClose }: InviteModalProps) {
             {typeof navigator !== "undefined" && navigator.share ? (
               <Button
                 className="w-full flex items-center justify-center gap-2"
-                onClick={() => navigator.share({ text: shareBody, url: inviteLink })}
+                loading={sharing}
+                onClick={handleShare}
               >
                 <Share2 className="w-4 h-4" />
                 Share Invite
