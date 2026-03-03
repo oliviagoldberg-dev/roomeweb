@@ -49,19 +49,19 @@ export function InviteModal({ open, code, onClose }: InviteModalProps) {
           <div className="space-y-3">
             {typeof navigator !== "undefined" && navigator.share ? (
               <Button
-                className="w-full"
+                className="w-full flex items-center justify-center gap-2"
                 onClick={() => navigator.share({ text: shareBody, url: inviteLink })}
               >
                 <Share2 className="w-4 h-4" />
                 Share Invite
               </Button>
             ) : (
-              <Button className="w-full" onClick={sendText}>
+              <Button className="w-full flex items-center justify-center gap-2" onClick={sendText}>
                 <Share2 className="w-4 h-4" />
                 Send Text
               </Button>
             )}
-            <Button variant="secondary" className="w-full" onClick={copyCode}>
+            <Button variant="secondary" className="w-full flex items-center justify-center gap-2" onClick={copyCode}>
               <Copy className="w-4 h-4" />
               Copy Invite Message
             </Button>
