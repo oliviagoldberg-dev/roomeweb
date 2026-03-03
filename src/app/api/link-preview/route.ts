@@ -99,6 +99,26 @@ function extractAddress(html: string): string {
   return "";
 }
 
+function extractAddressFromUrl(url: string, hostname: string): string {
+  if (hostname.includes("zillow")) {
+    const match = url.match(/\/homedetails\/([^/]+)\//);
+    if (match) {
+      return match[1]
+        .replace(/-/g, " ")
+        .replace(/\b([a-z])/g, (c) => c.toUpperCase());
+    }
+  }
+  if (hostname.includes("apartments.com")) {
+    const match = url.match(/apartments\.com\/([^/]+)\//);
+    if (match) {
+      return match[1]
+        .replace(/-/g, " ")
+        .replace(/\b([a-z])/g, (c) => c.toUpperCase());
+    }
+  }
+  return "";
+}
+
 function normalizeImageUrl(raw: string, baseUrl: string): string {
   if (!raw) return "";
   if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
@@ -151,44 +171,52 @@ export async function POST(req: Request) {
 
     const hostname = new URL(url).hostname;
     const source = prettifySource(hostname);
+    const stripped = url.replace(/^https?:\/\//, "");
 
+    // Try direct fetch first, then always fall back to jina.ai
     let html = await fetchHtml(url);
+    let jinaHtml = "";
     if (!html) {
+      jinaHtml = await fetchHtml(`https://r.jina.ai/https://${stripped}`);
+    }
+
+    const primary = html || jinaHtml;
+    if (!primary) {
       return NextResponse.json({
         title: "Listing",
         description: "Click to view listing",
         imageUrl: "",
         source,
+        address: extractAddressFromUrl(url, hostname),
       });
     }
 
-    const title = extractTitle(html) || "Listing";
+    const title = extractTitle(primary) || "Listing";
     const description =
-      extractMeta(html, "og:description") ||
-      extractMeta(html, "description") ||
+      extractMeta(primary, "og:description") ||
+      extractMeta(primary, "description") ||
       "Click to view listing";
     const rawImage =
-      extractMeta(html, "og:image:secure_url") ||
-      extractMeta(html, "og:image") ||
-      extractMeta(html, "twitter:image") ||
+      extractMeta(primary, "og:image:secure_url") ||
+      extractMeta(primary, "og:image") ||
+      extractMeta(primary, "twitter:image") ||
       "";
-    let imageUrl = normalizeImageUrl(rawImage, url) || extractFirstImage(html, hostname);
+    let imageUrl = normalizeImageUrl(rawImage, url) || extractFirstImage(primary, hostname);
 
-    let rent = extractPrice(html) ?? undefined;
-    let beds = extractBeds(html);
-    let baths = extractBaths(html);
-    let address = extractAddress(html);
+    let rent = extractPrice(primary) ?? undefined;
+    let beds = extractBeds(primary);
+    let baths = extractBaths(primary);
+    let address = extractAddress(primary) || extractAddressFromUrl(url, hostname);
 
-    if (!imageUrl || !beds || !baths || !address) {
-      // Fallback: fetch via jina.ai (helps with some sites like Zillow)
-      const stripped = url.replace(/^https?:\/\//, "");
-      const jinaHtml = await fetchHtml(`https://r.jina.ai/https://${stripped}`);
+    // If we used direct HTML and still missing data, also try jina.ai
+    if (html && (!imageUrl || !beds || !baths || !address)) {
+      if (!jinaHtml) jinaHtml = await fetchHtml(`https://r.jina.ai/https://${stripped}`);
       if (jinaHtml) {
         if (!imageUrl) imageUrl = extractFirstImage(jinaHtml, hostname);
         if (rent == null) rent = extractPrice(jinaHtml) ?? undefined;
         if (!beds) beds = extractBeds(jinaHtml);
         if (!baths) baths = extractBaths(jinaHtml);
-        if (!address) address = extractAddress(jinaHtml);
+        if (!address) address = extractAddress(jinaHtml) || extractAddressFromUrl(url, hostname);
       }
     }
 
