@@ -300,6 +300,17 @@ export async function sendMessage(
     lastMessageTime: new Date().toISOString(),
     unreadCount: newUnread,
   }).eq("id", convoId);
+
+  // Fire-and-forget notification for recipient
+  void supabase.auth.getSession().then(({ data: { session } }) => {
+    if (session) {
+      void fetch("/api/message-notification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ toUID: otherUID, text }),
+      });
+    }
+  });
 }
 
 export async function markConversationRead(convoId: string, uid: string) {
@@ -353,36 +364,25 @@ export function listenToFriendRequests(uid: string, cb: (rows: any[]) => void) {
 }
 
 export async function sendFriendRequest(fromUID: string, toUID: string) {
-  await supabase.from("friendrequests").insert({
-    fromUID,
-    toUID,
-    status: "pending",
-    timestamp: new Date().toISOString(),
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("Not authenticated");
+  const res = await fetch("/api/send-friend-request", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify({ toUID }),
   });
-  const { data: prefs } = await supabase
-    .from("profiles")
-    .select("notifyFriendRequests")
-    .eq("id", toUID)
-    .single();
-  if (prefs?.notifyFriendRequests !== false) {
-    await supabase.from("notifications").insert({
-      toUID,
-      fromUID,
-      type: "friend_request",
-      title: "New friend request",
-      body: "Someone sent you a friend request.",
-      read: false,
-      createdAt: new Date().toISOString(),
-    });
-  }
+  if (!res.ok) throw new Error("Failed to send friend request");
 }
 
 export async function acceptFriendRequest(requestId: string, myUid: string, fromUid: string) {
-  await supabase.from("friendrequests").update({ status: "accepted" }).eq("id", requestId);
-  await supabase.from("friendships").insert({
-    users: [myUid, fromUid],
-    createdAt: new Date().toISOString(),
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("Not authenticated");
+  const res = await fetch("/api/accept-friend-request", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify({ requestId, fromUID: fromUid }),
   });
+  if (!res.ok) throw new Error("Failed to accept friend request");
 }
 
 export async function declineFriendRequest(requestId: string) {
@@ -417,13 +417,12 @@ export async function validateInviteCode(code: string): Promise<string | null> {
 }
 
 export async function redeemInviteCode(code: string, newUserUid: string): Promise<boolean> {
-  const inviterUid = await validateInviteCode(code);
-  if (!inviterUid || inviterUid === newUserUid) return false;
-  await supabase.from("friendships").insert({
-    users: [newUserUid, inviterUid],
-    createdAt: new Date().toISOString(),
+  const res = await fetch("/api/redeem-invite", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code: code.trim().toUpperCase(), newUserUid }),
   });
-  return true;
+  return res.ok;
 }
 
 // ─── Notifications ────────────────────────────────────────────────────────────

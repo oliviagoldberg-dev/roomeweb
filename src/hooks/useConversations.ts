@@ -26,8 +26,8 @@ export function useConversations() {
           return {
             ...c,
             otherUserUid: otherUid,
-            otherUserName: userData?.name ?? "Unknown",
-            otherUserPhoto: userData?.profileImageURL ?? "",
+            otherUserName: userData?.name || userData?.username || "Unknown",
+            otherUserPhoto: userData?.profileImageURL || "",
           };
         })
       );

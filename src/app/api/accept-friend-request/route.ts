@@ -1,0 +1,38 @@
+import { NextResponse } from "next/server";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
+
+export async function POST(req: Request) {
+  try {
+    const token = req.headers.get("Authorization")?.slice(7) ?? null;
+    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    if (!user || authError) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { requestId, fromUID } = await req.json();
+
+    await supabaseAdmin.from("friendrequests").update({ status: "accepted" }).eq("id", requestId);
+    const { error } = await supabaseAdmin.from("friendships").insert({
+      users: [user.id, fromUID], createdAt: new Date().toISOString(),
+    });
+    if (error) throw error;
+
+    // Notify the original sender
+    const { data: prefs } = await supabaseAdmin
+      .from("profiles").select("notifyFriendRequests").eq("id", fromUID).single();
+    if (prefs?.notifyFriendRequests !== false) {
+      const { data: accepter } = await supabaseAdmin
+        .from("profiles").select("name").eq("id", user.id).single();
+      await supabaseAdmin.from("notifications").insert({
+        toUID: fromUID, fromUID: user.id, type: "friend_accepted",
+        title: "Friend request accepted",
+        body: `${accepter?.name ?? "Someone"} accepted your friend request.`,
+        read: false, createdAt: new Date().toISOString(),
+      });
+    }
+    return NextResponse.json({ ok: true });
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message ?? "Failed" }, { status: 500 });
+  }
+}

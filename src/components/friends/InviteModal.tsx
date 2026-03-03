@@ -56,7 +56,7 @@ export function InviteModal({ open, code, onClose }: InviteModalProps) {
           {code ? (
             <div className="bg-roome-pale rounded-2xl p-4">
               <p className="text-xs text-gray-400 mb-1">Your Invite Code</p>
-              <p className="text-4xl font-black text-roome-deep tracking-widest font-mono">{code}</p>
+              <p className="text-4xl font-black text-gray-900 tracking-widest font-mono">{code}</p>
             </div>
           ) : (
             <div className="h-20 flex items-center justify-center">
