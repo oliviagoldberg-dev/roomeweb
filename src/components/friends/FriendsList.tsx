@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { useFriends } from "@/hooks/useFriends";
 import { useFriendRequests } from "@/hooks/useFriendRequests";
 import { useAuthStore } from "@/store/authStore";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import {
   searchUsersByUsername,
   sendFriendRequest,
@@ -27,6 +28,7 @@ interface UserResult {
 
 export function FriendsList() {
   const { uid } = useAuthStore();
+  const { user } = useCurrentUser();
   const { friends, loading } = useFriends();
   const { requests } = useFriendRequests();
   const [search, setSearch] = useState("");
@@ -71,15 +73,22 @@ export function FriendsList() {
     setInviteCode("");
     setInviteOpen(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Session expired");
-      const res = await fetch("/api/get-invite-code", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Failed");
-      setInviteCode(json.code);
+      // Use existing code from profile if available
+      if (user?.inviteCode) {
+        setInviteCode(user.inviteCode);
+        return;
+      }
+      // Generate a new code and save it to the profile
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      const code = Array.from({ length: 6 }, () =>
+        chars[Math.floor(Math.random() * chars.length)]
+      ).join("");
+      const { error } = await supabase
+        .from("profiles")
+        .update({ inviteCode: code })
+        .eq("id", uid);
+      if (error) throw error;
+      setInviteCode(code);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to generate invite code");
       setInviteOpen(false);
