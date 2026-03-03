@@ -409,11 +409,11 @@ export async function getOrCreateInviteCode(uid: string): Promise<string> {
 
 export async function validateInviteCode(code: string): Promise<string | null> {
   const { data } = await supabase
-    .from("invite_codes")
-    .select("uid")
-    .eq("code", code.trim().toUpperCase())
+    .from("profiles")
+    .select("id")
+    .eq("inviteCode", code.trim().toUpperCase())
     .single();
-  return data?.uid ?? null;
+  return data?.id ?? null;
 }
 
 export async function redeemInviteCode(code: string, newUserUid: string): Promise<boolean> {

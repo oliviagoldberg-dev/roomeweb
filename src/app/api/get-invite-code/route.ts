@@ -27,8 +27,11 @@ export async function POST(req: Request) {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     const code = Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
 
-    await supabaseAdmin.from("profiles").update({ inviteCode: code }).eq("id", user.id);
-    await supabaseAdmin.from("inviteCodes").insert({ code, uid: user.id, createdAt: new Date().toISOString() });
+    const { error: updateError } = await supabaseAdmin
+      .from("profiles")
+      .update({ inviteCode: code })
+      .eq("id", user.id);
+    if (updateError) throw updateError;
 
     return NextResponse.json({ code });
   } catch (err: any) {
