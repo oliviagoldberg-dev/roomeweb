@@ -108,10 +108,10 @@ export async function fetchUsersInCity(city: string, excludeUid: string) {
 export async function listBlockedUsers(uid: string): Promise<string[]> {
   const { data, error } = await supabase
     .from("blocks")
-    .select("blockedUid")
-    .eq("blockerUid", uid);
+    .select("blocked_uid")
+    .eq("blocker_uid", uid);
   if (error) return [];
-  return (data ?? []).map((r: any) => r.blockedUid).filter(Boolean);
+  return (data ?? []).map((r: any) => r.blocked_uid).filter(Boolean);
 }
 
 export async function blockUser(blockerUid: string, blockedUid: string) {
@@ -125,8 +125,8 @@ export async function unblockUser(blockerUid: string, blockedUid: string) {
   const { error } = await supabase
     .from("blocks")
     .delete()
-    .eq("blockerUid", blockerUid)
-    .eq("blockedUid", blockedUid);
+    .eq("blocker_uid", blockerUid)
+    .eq("blocked_uid", blockedUid);
   if (error) throw error;
 }
 
