@@ -23,9 +23,10 @@ interface AddListingModalProps {
   open: boolean;
   onClose: () => void;
   defaultFolderId?: string | null;
+  onSaved?: (listing: SavedListing) => void;
 }
 
-export function AddListingModal({ open, onClose, defaultFolderId }: AddListingModalProps) {
+export function AddListingModal({ open, onClose, defaultFolderId, onSaved }: AddListingModalProps) {
   const { uid } = useAuthStore();
   const { user } = useCurrentUser();
   const [tab, setTab] = useState<"url" | "manual">("url");
@@ -76,7 +77,7 @@ export function AddListingModal({ open, onClose, defaultFolderId }: AddListingMo
     if (!uid || !preview) return;
     setSaving(true);
     try {
-      const listingId = await saveListing(uid, {
+      const listingData = {
         ownerUid: uid,
         url,
         ...preview,
@@ -85,12 +86,14 @@ export function AddListingModal({ open, onClose, defaultFolderId }: AddListingMo
         neighborhood: user?.neighborhood ?? "",
         rent: preview.rent ?? undefined,
         ...(defaultFolderId != null ? { folderId: defaultFolderId } : {}),
-      } as Omit<SavedListing, "id">);
+      } as Omit<SavedListing, "id">;
+      const listingId = await saveListing(uid, listingData);
       void fetch("/api/notify-listing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ listingId }),
       });
+      onSaved?.({ ...listingData, id: listingId, createdAt: new Date().toISOString() });
       toast.success("Listing saved!");
       handleClose();
     } catch (err: unknown) {
@@ -111,7 +114,7 @@ export function AddListingModal({ open, onClose, defaultFolderId }: AddListingMo
       if (photoFiles.length) {
         photoURLs = await uploadListingPhotos(uid, photoFiles);
       }
-      const listingId = await saveListing(uid, {
+      const listingData = {
         ownerUid: uid,
         url: manualUrl,
         title: address.trim(),
@@ -130,12 +133,14 @@ export function AddListingModal({ open, onClose, defaultFolderId }: AddListingMo
         photoURLs,
         notes,
         ...(defaultFolderId != null ? { folderId: defaultFolderId } : {}),
-      } as Omit<SavedListing, "id">);
+      } as Omit<SavedListing, "id">;
+      const listingId = await saveListing(uid, listingData);
       void fetch("/api/notify-listing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ listingId }),
       });
+      onSaved?.({ ...listingData, id: listingId, createdAt: new Date().toISOString() });
       toast.success("Listing posted!");
       handleClose();
     } catch (err: unknown) {

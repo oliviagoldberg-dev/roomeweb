@@ -20,5 +20,9 @@ export function useSavedListings() {
     return unsub;
   }, [uid]);
 
-  return { listings, loading };
+  function addListing(listing: SavedListing) {
+    setListings((prev) => [listing, ...prev]);
+  }
+
+  return { listings, loading, addListing };
 }

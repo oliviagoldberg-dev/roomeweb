@@ -18,7 +18,7 @@ import { Avatar } from "@/components/ui/Avatar";
 
 export default function ListingsPage() {
   const { user } = useCurrentUser();
-  const { listings, loading } = useSavedListings();
+  const { listings, loading, addListing } = useSavedListings();
   const { folders, addFolder, removeFolder } = useListingFolders();
   const { uid } = useAuthStore();
   const { convos } = useConversations();
@@ -165,6 +165,7 @@ export default function ListingsPage() {
         open={addListingModalOpen}
         onClose={() => setAddListingModalOpen(false)}
         defaultFolderId={favoritesFolderId}
+        onSaved={addListing}
       />
 
       {newFolderOpen && (

@@ -96,7 +96,7 @@ export async function fetchUsersInCity(city: string, excludeUid: string) {
   const { data, error } = await supabase
     .from("profiles")
     .select("*")
-    .eq("city", city)
+    .eq("moveCity", city)
     .eq("onboardingComplete", true)
     .neq("id", excludeUid);
   if (error) return [];

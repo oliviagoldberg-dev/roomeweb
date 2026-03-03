@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     const code = Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
 
     await supabaseAdmin.from("profiles").update({ inviteCode: code }).eq("id", user.id);
-    await supabaseAdmin.from("invite_codes").insert({ code, uid: user.id, createdAt: new Date().toISOString() });
+    await supabaseAdmin.from("inviteCodes").insert({ code, uid: user.id, createdAt: new Date().toISOString() });
 
     return NextResponse.json({ code });
   } catch (err: any) {
