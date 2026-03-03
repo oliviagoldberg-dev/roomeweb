@@ -210,7 +210,7 @@ export function AddListingModal({ open, onClose, defaultFolderId, onSaved }: Add
           </div>
 
           {/* Body */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4">
             {tab === "url" ? (
               <>
                 <p className="text-sm text-gray-500">
