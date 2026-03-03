@@ -78,11 +78,12 @@ export function AddListingModal({ open, onClose, defaultFolderId, onSaved }: Add
     if (!uid || !preview) return;
     setSaving(true);
     try {
+      const { address: previewAddress, ...previewRest } = preview;
       const listingData = {
         ownerUid: uid,
         url,
-        ...preview,
-        title: address.trim() || preview.title,
+        ...previewRest,
+        title: address.trim() || previewAddress || preview.title,
         city: user?.city ?? "",
         neighborhood: user?.neighborhood ?? "",
         rent: preview.rent ?? undefined,
