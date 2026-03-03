@@ -64,7 +64,7 @@ export function InviteModal({ open, code, onClose }: InviteModalProps) {
             </div>
           )}
           <div className="space-y-3">
-            {typeof navigator !== "undefined" && navigator.share ? (
+            {typeof navigator !== "undefined" && "share" in navigator ? (
               <Button
                 className="w-full flex items-center justify-center gap-2"
                 loading={sharing}
