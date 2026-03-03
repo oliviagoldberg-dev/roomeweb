@@ -19,9 +19,10 @@ interface SavedListingCardProps {
   listing: SavedListing;
   folders: ListingFolder[];
   onFolderChange?: (id: string, folderId: string | null) => void;
+  onDeleted?: (id: string) => void;
 }
 
-export function SavedListingCard({ listing, folders, onFolderChange }: SavedListingCardProps) {
+export function SavedListingCard({ listing, folders, onFolderChange, onDeleted }: SavedListingCardProps) {
   const router = useRouter();
   const { uid } = useAuthStore();
   const { convos } = useConversations();
@@ -47,6 +48,7 @@ export function SavedListingCard({ listing, folders, onFolderChange }: SavedList
     setDeleting(true);
     try {
       await deleteSavedListing(listing.id);
+      onDeleted?.(listing.id);
       toast.success("Listing removed");
     } catch {
       toast.error("Failed to remove");

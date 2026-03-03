@@ -18,7 +18,7 @@ import { Avatar } from "@/components/ui/Avatar";
 
 export default function ListingsPage() {
   const { user } = useCurrentUser();
-  const { listings, loading, addListing } = useSavedListings();
+  const { listings, loading, addListing, removeListing } = useSavedListings();
   const { folders, addFolder, removeFolder } = useListingFolders();
   const { uid } = useAuthStore();
   const { convos } = useConversations();
@@ -156,7 +156,7 @@ export default function ListingsPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {visibleListings.map((l) => (
-            <SavedListingCard key={l.id} listing={l} folders={folders} />
+            <SavedListingCard key={l.id} listing={l} folders={folders} onDeleted={removeListing} />
           ))}
         </div>
       )}

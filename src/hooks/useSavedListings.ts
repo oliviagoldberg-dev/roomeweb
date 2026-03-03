@@ -24,5 +24,9 @@ export function useSavedListings() {
     setListings((prev) => [listing, ...prev]);
   }
 
-  return { listings, loading, addListing };
+  function removeListing(id: string) {
+    setListings((prev) => prev.filter((l) => l.id !== id));
+  }
+
+  return { listings, loading, addListing, removeListing };
 }
