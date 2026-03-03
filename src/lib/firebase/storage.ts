@@ -24,7 +24,7 @@ export async function uploadOnboardingPhotos(uid: string, files: File[]): Promis
 export async function uploadProfilePhotos(uid: string, files: File[]): Promise<string[]> {
   const urls: string[] = [];
   for (let i = 0; i < files.length; i++) {
-    const path = `profilePhotos/${uid}/photo_${i}.jpg`;
+    const path = `users/${uid}/photo_${i}.jpg`;
     urls.push(await uploadToBucket(path, files[i]));
   }
   return urls;

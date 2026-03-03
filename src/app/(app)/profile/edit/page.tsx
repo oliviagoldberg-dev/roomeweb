@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { isUsernameAvailable, updateUser } from "@/lib/firebase/firestore";
+import { isUsernameAvailable } from "@/lib/firebase/firestore";
 import { uploadProfilePhotos } from "@/lib/firebase/storage";
 import { changePassword } from "@/lib/firebase/auth";
 import { supabase } from "@/lib/supabase/client";
@@ -173,23 +173,36 @@ export default function ProfileEditPage() {
       }
       const mainUrl = photoURLs[mainPhotoIdx] ?? photoURLs[0] ?? "";
       const reordered = mainUrl ? [mainUrl, ...photoURLs.filter((_, i) => i !== mainPhotoIdx)] : photoURLs;
-      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-      if (!authUser || authError) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         toast.error("Session expired. Please log in again.");
         return;
       }
-      await updateUser(authUser.id, {
-        name, username: normalizedUsername, phone, age,
-        occupation, company, hometown, university,
-        bio,
-        hasPet, smokes, host, workFromHome, cleanliness, sleepSchedule,
-        budgetMin, budgetMax, beds, baths, furnished, leaseLength,
-        hasAC, hasLaundry, hasParking, moveCity,
-        neighborhood: neighborhoods[0] ?? neighborhood,
-        neighborhoodPreferences: neighborhoods,
-        photoURLs: reordered,
-        profileImageURL: reordered[0] ?? user?.profileImageURL ?? "",
+      const res = await fetch("/api/update-profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          data: {
+            name, username: normalizedUsername, phone, age,
+            occupation, company, hometown, university,
+            bio,
+            hasPet, smokes, host, workFromHome, cleanliness, sleepSchedule,
+            budgetMin, budgetMax, beds, baths, furnished, leaseLength,
+            hasAC, hasLaundry, hasParking, moveCity,
+            neighborhood: neighborhoods[0] ?? neighborhood,
+            neighborhoodPreferences: neighborhoods,
+            photoURLs: reordered,
+            profileImageURL: reordered[0] ?? user?.profileImageURL ?? "",
+          },
+        }),
       });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? "Failed to save");
+      }
       toast.success("Profile saved!");
       router.push("/profile");
     } catch (err: unknown) {
