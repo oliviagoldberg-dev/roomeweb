@@ -9,8 +9,8 @@ import {
   sendFriendRequest,
   acceptFriendRequest,
   declineFriendRequest,
-  getOrCreateInviteCode,
 } from "@/lib/firebase/firestore";
+import { supabase } from "@/lib/supabase/client";
 import { FriendRequestCard } from "./FriendRequestCard";
 import { InviteModal } from "./InviteModal";
 import { Avatar } from "@/components/ui/Avatar";
@@ -71,8 +71,15 @@ export function FriendsList() {
     setInviteCode("");
     setInviteOpen(true);
     try {
-      const code = await getOrCreateInviteCode(uid);
-      setInviteCode(code);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Session expired");
+      const res = await fetch("/api/get-invite-code", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Failed");
+      setInviteCode(json.code);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to generate invite code");
       setInviteOpen(false);

@@ -24,7 +24,7 @@ export function InviteModal({ open, code, onClose }: InviteModalProps) {
   function sendText() {
     if (typeof window === "undefined") return;
     const body = encodeURIComponent(shareBody);
-    window.location.href = `sms:?&body=${body}`;
+    window.location.href = `sms:?body=${body}`;
   }
 
   return (

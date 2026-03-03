@@ -27,6 +27,7 @@ import cities from "@/data/us_major_cities.json";
 export default function ProfileEditPage() {
   const router = useRouter();
   const { uid } = useAuthStore();
+  const setRoommateUser = useAuthStore((s) => s.setRoommateUser);
   const { user, loading } = useCurrentUser();
 
   // Photos
@@ -203,6 +204,7 @@ export default function ProfileEditPage() {
         const err = await res.json();
         throw new Error(err.error ?? "Failed to save");
       }
+      setRoommateUser(null); // force refetch on next load
       toast.success("Profile saved!");
       router.push("/profile");
     } catch (err: unknown) {
