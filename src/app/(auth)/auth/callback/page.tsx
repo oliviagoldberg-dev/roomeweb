@@ -26,19 +26,23 @@ function AuthCallbackClient() {
         const tokenHash = searchParams.get("token_hash");
         const type = searchParams.get("type") as EmailOtpType | null;
 
-        if (code) {
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) throw error;
-          user = data.session?.user ?? null;
-        } else if (tokenHash && type) {
+        if (tokenHash && type) {
+          // Preferred: token_hash works cross-device without PKCE verifier
           const { data, error } = await supabase.auth.verifyOtp({
             token_hash: tokenHash,
             type,
           });
           if (error) throw error;
           user = data.user ?? null;
+        } else if (code) {
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+          user = data.session?.user ?? null;
         } else {
-          throw new Error("Missing callback params");
+          // Implicit flow: session is in the URL hash, already picked up by detectSessionInUrl
+          const { data } = await supabase.auth.getSession();
+          user = data.session?.user ?? null;
+          if (!user) throw new Error("No session found");
         }
       } catch {
         setMessage("Email verification failed. Please try signing in again.");
