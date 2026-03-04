@@ -61,7 +61,7 @@ export default function ProfilePage() {
               <h1 className="text-2xl font-black">{user.name}</h1>
               {isPremium
                 ? <span className="text-xs font-bold bg-roome-core text-white rounded-full px-2 py-0.5">Premium ✦</span>
-                : <span className="text-xs font-semibold bg-gray-100 text-gray-500 rounded-full px-2 py-0.5">Free</span>
+                : <span className="text-xs font-semibold bg-roome-core text-white rounded-full px-2 py-0.5">Free</span>
               }
             </div>
             <p className="text-gray-500">@{user.username}</p>
