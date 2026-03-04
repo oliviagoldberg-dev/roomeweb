@@ -29,6 +29,7 @@ export const CITY_OPTIONS = [
   "Philadelphia, PA",
   "Phoenix, AZ",
   "Portland, OR",
+  "Washington, DC",
 ];
 
 export const NEIGHBORHOODS_BY_CITY: Record<string, string[]> = {
