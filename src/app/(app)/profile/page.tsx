@@ -137,9 +137,9 @@ export default function ProfilePage() {
 
 function StatCard({ label, value, color }: { label: string; value: string | number; color: string }) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-4 text-center">
-      <p className={`text-xl font-black ${color}`}>{value}</p>
-      <p className="text-xs text-gray-500 mt-0.5">{label}</p>
+    <div className="bg-roome-core rounded-2xl shadow-sm p-4 text-center">
+      <p className="text-xl font-black text-white">{value}</p>
+      <p className="text-xs text-white/80 mt-0.5">{label}</p>
     </div>
   );
 }
