@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { signOut } from "@/lib/firebase/auth";
 import { useAuthStore } from "@/store/authStore";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useSubscription } from "@/hooks/useSubscription";
+import { listenToFriendships } from "@/lib/firebase/firestore";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -17,6 +18,12 @@ export default function ProfilePage() {
   const { user, loading } = useCurrentUser();
   const { isPremium } = useSubscription();
   const [portalLoading, setPortalLoading] = useState(false);
+  const [friendCount, setFriendCount] = useState(0);
+
+  useEffect(() => {
+    if (!uid) return;
+    return listenToFriendships(uid, (rows) => setFriendCount(rows.length));
+  }, [uid]);
 
   async function handleManageSubscription() {
     if (!uid) return;
@@ -67,7 +74,7 @@ export default function ProfilePage() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <StatCard label="Friends" value={user.connections?.length ?? 0} color="text-roome-core" />
+        <StatCard label="Friends" value={friendCount} color="text-roome-core" />
         <StatCard label="Budget Min" value={`$${user.budgetMin}`} color="text-roome-core" />
         <StatCard label="Budget Max" value={`$${user.budgetMax}`} color="text-roome-core" />
       </div>
