@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Button } from "@/components/ui/Button";
@@ -24,7 +25,7 @@ export default function PricingPage() {
   const [loading, setLoading] = useState(false);
 
   async function handleUpgrade() {
-    if (!uid) return;
+    if (!uid) { toast.error("Please log in first"); return; }
     setLoading(true);
     try {
       const res = await fetch("/api/stripe/checkout", {
@@ -32,9 +33,15 @@ export default function PricingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ uid }),
       });
-      const { url } = await res.json();
-      if (url) window.location.href = url;
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error(data.error ?? "Something went wrong");
+        setLoading(false);
+      }
     } catch {
+      toast.error("Failed to start checkout");
       setLoading(false);
     }
   }
