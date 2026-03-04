@@ -37,6 +37,8 @@ export function FriendsList() {
   const [sentTo, setSentTo] = useState<Set<string>>(new Set());
   const [inviteCode, setInviteCode] = useState("");
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncNote, setSyncNote] = useState("");
 
   function handleSearch(val: string) {
     setSearch(val);
@@ -63,6 +65,33 @@ export function FriendsList() {
 
   async function handleDecline(requestId: string) {
     await declineFriendRequest(requestId);
+  }
+
+  async function handleSyncContacts() {
+    setSyncNote("");
+    if (typeof (navigator as any).contacts === "undefined") {
+      toast.error("Contact sync requires Chrome on Android.");
+      return;
+    }
+    setSyncing(true);
+    try {
+      const selected = await (navigator as any).contacts.select(["name", "tel", "email"], { multiple: true });
+      const phones: string[] = selected.flatMap((c: any) => c.tel ?? []);
+      const emails: string[] = selected.flatMap((c: any) => c.email ?? []);
+      if (phones.length === 0 && emails.length === 0) return;
+      const conditions = [
+        ...(phones.length ? [`phone.in.(${phones.map((p) => `"${p}"`).join(",")})`] : []),
+        ...(emails.length ? [`email.in.(${emails.map((e) => `"${e}"`).join(",")})`] : []),
+      ].join(",");
+      const { data } = await supabase.from("profiles").select("id, username, name, profileImageURL, occupation").or(conditions).neq("id", uid ?? "");
+      if (data && data.length > 0) {
+        setResults(data.map((u: any) => ({ id: u.id, username: u.username, name: u.name, profileImageURL: u.profileImageURL })));
+      } else {
+        setSyncNote("No ROOMe users found in your contacts.");
+      }
+    } finally {
+      setSyncing(false);
+    }
   }
 
   function handleInvite() {
@@ -92,7 +121,7 @@ export function FriendsList() {
 
   return (
     <div className="space-y-6">
-      {/* Search + Invite */}
+      {/* Search + Sync Contacts + Invite + friend count */}
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -105,6 +134,14 @@ export function FriendsList() {
         </div>
         <Button
           size="sm"
+          onClick={handleSyncContacts}
+          disabled={syncing}
+          className="bg-roome-deep hover:bg-[#083d80] text-white"
+        >
+          {syncing ? "Syncing…" : "Sync Contacts"}
+        </Button>
+        <Button
+          size="sm"
           onClick={handleInvite}
           className="inline-flex items-center gap-2 bg-[#38b6ff] hover:bg-[#2ea6f0] text-white"
         >
@@ -112,6 +149,7 @@ export function FriendsList() {
           Invite
         </Button>
       </div>
+      {syncNote && <p className="text-sm text-gray-400">{syncNote}</p>}
 
       {/* Search results */}
       {searching && <div className="flex justify-center"><LoadingSpinner /></div>}
@@ -143,7 +181,7 @@ export function FriendsList() {
       {/* Pending requests */}
       {search.length < 3 && (
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-roome-core/10 text-roome-core text-sm font-semibold">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-roome-core/10 text-black text-sm font-semibold">
             Friend Requests
             <span className="min-w-[18px] h-[18px] bg-roome-core text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
               {requests.length}
@@ -167,7 +205,7 @@ export function FriendsList() {
       {/* Friends list */}
       {search.length < 3 && (
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-roome-core/10 text-roome-core text-sm font-semibold">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-roome-core/10 text-black text-sm font-semibold">
             My Friends
             <span className="min-w-[18px] h-[18px] bg-roome-core text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
               {friends.length}
@@ -191,9 +229,8 @@ export function FriendsList() {
                 <div key={f.id} className="flex items-center gap-3 p-4">
                   <Avatar src={f.profileImageURL} name={f.name} size={52} />
                   <div>
-                    <p className="font-semibold">{f.name}</p>
-                    <p className="text-sm text-gray-400">@{f.username}</p>
-                    {f.occupation && <p className="text-xs text-gray-400">{f.occupation}</p>}
+                    <p className="font-semibold text-black">@{f.username}</p>
+                    {f.occupation && <p className="text-sm text-black">{f.occupation}</p>}
                   </div>
                 </div>
               ))}
