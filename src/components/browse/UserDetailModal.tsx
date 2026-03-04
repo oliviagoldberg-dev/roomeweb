@@ -4,10 +4,12 @@ import toast from "react-hot-toast";
 import * as Dialog from "@radix-ui/react-dialog";
 import { likeUser, ensureConversation, blockUser, reportUser } from "@/lib/firebase/firestore";
 import { useAuthStore } from "@/store/authStore";
+import { useSubscription } from "@/hooks/useSubscription";
 import { RoommateUser } from "@/types/user";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { PaywallModal } from "@/components/ui/PaywallModal";
 import { useRouter } from "next/navigation";
 import { Heart, MessageSquare, PawPrint } from "lucide-react";
 
@@ -89,19 +91,24 @@ export function PhotoSwiper({ photos, name, heightClass = "h-64" }: { photos: st
 
 export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
   const { uid } = useAuthStore();
+  const { canConnect } = useSubscription();
   const router = useRouter();
   const [liking, setLiking] = useState(false);
   const [messaging, setMessaging] = useState(false);
   const [matchOpen, setMatchOpen] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
 
   const photos = (user.photoURLs?.length ? user.photoURLs : user.profileImageURL ? [user.profileImageURL] : []);
 
   async function handleLike() {
     if (!uid) return;
+    if (!canConnect) { setPaywallOpen(true); return; }
     setLiking(true);
     try {
-      const isMatch = await likeUser(uid, user.id);
-      if (isMatch) {
+      const result = await likeUser(uid, user.id);
+      if (result.limitReached) {
+        setPaywallOpen(true);
+      } else if (result.isMatch) {
         toast.success(`It's a match with ${user.name}!`);
         setMatchOpen(true);
       } else {
@@ -168,6 +175,7 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
 
   return (
     <>
+    <PaywallModal open={paywallOpen} onClose={() => setPaywallOpen(false)} feature="connections" />
     <Dialog.Root open onOpenChange={(open) => { if (!open) onClose(); }}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />

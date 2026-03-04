@@ -20,7 +20,9 @@ export function useBrowseUsers() {
         listBlockedUsers(uidSafe),
       ]);
       const blockedSet = new Set(blocked);
-      setUsers((data as RoommateUser[]).filter((u) => !blockedSet.has(u.id)));
+      const filtered = (data as RoommateUser[]).filter((u) => !blockedSet.has(u.id));
+      filtered.sort((a, b) => (b.boostActive ? 1 : 0) - (a.boostActive ? 1 : 0));
+      setUsers(filtered);
       setLoading(false);
     }
     void load(city, uidSafe);

@@ -1,6 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link2 } from "lucide-react";
+import { useSubscription } from "@/hooks/useSubscription";
+import { PaywallModal } from "@/components/ui/PaywallModal";
 
 interface MessageInputProps {
   recipientName: string;
@@ -11,11 +13,16 @@ interface MessageInputProps {
 
 export function MessageInput({ recipientName, onSend, onSendLink, disabled }: MessageInputProps) {
   const [text, setText] = useState("");
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const { isPremium } = useSubscription();
+  const sentCount = useRef(0);
 
   function handleSend() {
     const t = text.trim();
     if (!t) return;
+    if (!isPremium && sentCount.current >= 10) { setPaywallOpen(true); return; }
     onSend(t);
+    sentCount.current += 1;
     setText("");
   }
 
@@ -27,6 +34,8 @@ export function MessageInput({ recipientName, onSend, onSendLink, disabled }: Me
   }
 
   return (
+    <>
+    <PaywallModal open={paywallOpen} onClose={() => setPaywallOpen(false)} feature="messages" />
     <div className="flex items-center gap-2 p-3 bg-white border-t border-gray-100">
       <button
         onClick={onSendLink}
@@ -51,5 +60,6 @@ export function MessageInput({ recipientName, onSend, onSendLink, disabled }: Me
         ↑
       </button>
     </div>
+    </>
   );
 }

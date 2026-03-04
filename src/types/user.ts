@@ -48,6 +48,13 @@ export interface RoommateUser {
   notifyMessages?: boolean;
   notifyListings?: boolean;
   notifyFriendRequests?: boolean;
+  // Subscription
+  subscriptionTier?: 'free' | 'premium';
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  subscriptionEnd?: string;
+  boostActive?: boolean;
+  connectionsCount?: number;
 }
 
 export type RoommateUserPartial = Partial<RoommateUser> & { id: string };

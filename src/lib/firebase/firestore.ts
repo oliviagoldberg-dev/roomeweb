@@ -150,7 +150,19 @@ export async function searchUsersByUsername(prefix: string, currentUid: string, 
 
 // ─── Like / Match ─────────────────────────────────────────────────────────────
 
-export async function likeUser(myUid: string, targetUid: string): Promise<boolean> {
+export async function likeUser(myUid: string, targetUid: string): Promise<{ isMatch: boolean; limitReached?: boolean }> {
+  const { data: myProfile } = await supabase
+    .from("profiles")
+    .select("subscriptionTier, connectionsCount, likedBy")
+    .eq("id", myUid)
+    .single();
+
+  const tier = myProfile?.subscriptionTier ?? "free";
+  const connectionsCount: number = myProfile?.connectionsCount ?? 0;
+  if (tier !== "premium" && connectionsCount >= 10) {
+    return { isMatch: false, limitReached: true };
+  }
+
   const { data: target, error: targetErr } = await supabase
     .from("profiles")
     .select("likedBy")
@@ -161,13 +173,10 @@ export async function likeUser(myUid: string, targetUid: string): Promise<boolea
   const newLikedBy = Array.from(new Set([...(target?.likedBy ?? []), myUid]));
   await supabase.from("profiles").update({ likedBy: newLikedBy }).eq("id", targetUid);
 
-  const { data: me } = await supabase
-    .from("profiles")
-    .select("likedBy")
-    .eq("id", myUid)
-    .single();
-  const myLikedBy: string[] = me?.likedBy ?? [];
+  const myLikedBy: string[] = myProfile?.likedBy ?? [];
   const mutual = myLikedBy.includes(targetUid);
+
+  await supabase.from("profiles").update({ connectionsCount: connectionsCount + 1 }).eq("id", myUid);
 
   if (mutual) {
     const { data: meConn } = await supabase
@@ -186,9 +195,9 @@ export async function likeUser(myUid: string, targetUid: string): Promise<boolea
 
     await supabase.from("profiles").update({ connections: myConnections }).eq("id", myUid);
     await supabase.from("profiles").update({ connections: theirConnections }).eq("id", targetUid);
-    return true;
+    return { isMatch: true };
   }
-  return false;
+  return { isMatch: false };
 }
 
 // ─── Conversations ────────────────────────────────────────────────────────────

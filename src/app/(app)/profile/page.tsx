@@ -1,9 +1,11 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { signOut } from "@/lib/firebase/auth";
 import { useAuthStore } from "@/store/authStore";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useSubscription } from "@/hooks/useSubscription";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -11,8 +13,26 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { clear } = useAuthStore();
+  const { uid, clear } = useAuthStore();
   const { user, loading } = useCurrentUser();
+  const { isPremium } = useSubscription();
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  async function handleManageSubscription() {
+    if (!uid) return;
+    setPortalLoading(true);
+    try {
+      const res = await fetch("/api/stripe/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid }),
+      });
+      const { url } = await res.json();
+      if (url) window.location.href = url;
+    } catch {
+      setPortalLoading(false);
+    }
+  }
 
   async function handleSignOut() {
     await signOut();
@@ -30,7 +50,13 @@ export default function ProfilePage() {
         <div className="flex items-center gap-4">
           <Avatar src={user.profileImageURL} name={user.name} size={80} />
           <div>
-            <h1 className="text-2xl font-black">{user.name}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-black">{user.name}</h1>
+              {isPremium
+                ? <span className="text-xs font-bold bg-roome-core text-white rounded-full px-2 py-0.5">Premium ✦</span>
+                : <span className="text-xs font-semibold bg-gray-100 text-gray-500 rounded-full px-2 py-0.5">Free</span>
+              }
+            </div>
             <p className="text-gray-500">@{user.username}</p>
             {user.occupation && <p className="text-sm text-gray-600 mt-1">{user.occupation}</p>}
             {user.city && <Badge color="blue" className="mt-2">{user.city}</Badge>}
@@ -85,6 +111,15 @@ export default function ProfilePage() {
         <Link href="/profile/verification" className="block">
           <Button variant="secondary" className="w-full">Verification</Button>
         </Link>
+        {isPremium ? (
+          <Button variant="secondary" className="w-full" onClick={handleManageSubscription} loading={portalLoading}>
+            Manage Subscription
+          </Button>
+        ) : (
+          <Link href="/pricing" className="block">
+            <Button className="w-full">Upgrade to Premium ✦</Button>
+          </Link>
+        )}
         <Button variant="danger" onClick={handleSignOut} className="w-full">
           Found your roommate
         </Button>
