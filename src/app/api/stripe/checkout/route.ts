@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
 export async function POST(req: NextRequest) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   const { uid } = await req.json();
   if (!uid) return NextResponse.json({ error: "uid required" }, { status: 400 });
 
