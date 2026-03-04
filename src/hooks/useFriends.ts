@@ -13,10 +13,12 @@ export function useFriends() {
     if (!uid) { setLoading(false); return; }
 
     const unsub = listenToFriendships(uid, async (rows) => {
-      const friendUids = rows.map((d: any) => {
-        const users: string[] = d.users ?? [];
-        return users.find((u) => u !== uid) ?? "";
-      }).filter(Boolean);
+      const friendUids = [...new Set(
+        rows.map((d: any) => {
+          const users: string[] = d.users ?? [];
+          return users.find((u) => u !== uid) ?? "";
+        }).filter(Boolean)
+      )];
 
       const resolved = await Promise.all(
         friendUids.map(async (fuid) => {

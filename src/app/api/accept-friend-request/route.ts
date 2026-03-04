@@ -23,11 +23,12 @@ export async function POST(req: Request) {
       .from("profiles").select("notifyFriendRequests").eq("id", fromUID).single();
     if (prefs?.notifyFriendRequests !== false) {
       const { data: accepter } = await supabaseAdmin
-        .from("profiles").select("name").eq("id", user.id).single();
+        .from("profiles").select("name, username").eq("id", user.id).single();
+      const accepterName = accepter?.name || accepter?.username || "Someone";
       await supabaseAdmin.from("notifications").insert({
         toUID: fromUID, fromUID: user.id, type: "friend_accepted",
         title: "Friend request accepted",
-        body: `${accepter?.name ?? "Someone"} accepted your friend request.`,
+        body: `${accepterName} accepted your friend request.`,
         read: false, createdAt: new Date().toISOString(),
       });
     }

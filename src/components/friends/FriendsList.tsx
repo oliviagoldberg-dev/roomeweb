@@ -94,29 +94,27 @@ export function FriendsList() {
     }
   }
 
-  function handleInvite() {
+  async function handleInvite() {
     if (!uid) {
       toast.error("Please sign in to invite friends.");
       return;
     }
-    // Use existing code instantly if available
-    if (user?.inviteCode) {
-      setInviteCode(user.inviteCode);
+    try {
+      const res = await fetch("/api/invite/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.code) {
+        toast.error("Could not generate invite code. Try again.");
+        return;
+      }
+      setInviteCode(data.code);
       setInviteOpen(true);
-      return;
+    } catch {
+      toast.error("Could not generate invite code. Try again.");
     }
-    // Generate a new code and show the modal immediately
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    const code = Array.from({ length: 6 }, () =>
-      chars[Math.floor(Math.random() * chars.length)]
-    ).join("");
-    setInviteCode(code);
-    setInviteOpen(true);
-    // Save in the background so the code can be validated at signup
-    void supabase
-      .from("profiles")
-      .update({ inviteCode: code })
-      .eq("id", uid);
   }
 
   return (
