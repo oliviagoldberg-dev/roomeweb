@@ -124,7 +124,7 @@ export default function ProfilePage() {
           </Button>
         ) : (
           <Link href="/pricing" className="block">
-            <Button className="w-full">Upgrade to Premium ✦</Button>
+            <Button className="w-full">Upgrade to Premium</Button>
           </Link>
         )}
         <Button variant="danger" onClick={handleSignOut} className="w-full">
