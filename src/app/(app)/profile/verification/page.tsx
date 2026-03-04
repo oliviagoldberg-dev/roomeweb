@@ -80,7 +80,7 @@ export default function VerificationPage() {
             <h2 className="font-bold">ID Verification</h2>
             <p className="text-sm text-gray-500">Coming soon</p>
           </div>
-          <Badge color="gray" className="ml-auto">Soon</Badge>
+          <Badge color="blue" className="ml-auto">Soon</Badge>
         </div>
       </div>
     </div>
