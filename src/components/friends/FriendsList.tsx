@@ -229,8 +229,8 @@ export function FriendsList() {
                 <div key={f.id} className="flex items-center gap-3 p-4">
                   <Avatar src={f.profileImageURL} name={f.name} size={52} />
                   <div>
-                    <p className="font-semibold text-black">@{f.username}</p>
-                    {f.occupation && <p className="text-sm text-black">{f.occupation}</p>}
+                    <p className="font-semibold text-black">{f.name}</p>
+                    {f.occupation && <p className="text-sm text-gray-500">{f.occupation}</p>}
                   </div>
                 </div>
               ))}
