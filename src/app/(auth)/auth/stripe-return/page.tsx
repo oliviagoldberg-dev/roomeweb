@@ -1,10 +1,9 @@
 "use client";
-export const dynamic = "force-dynamic";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
-export default function StripeReturnPage() {
+function StripeReturn() {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -18,4 +17,12 @@ export default function StripeReturnPage() {
   }, [params, router]);
 
   return null;
+}
+
+export default function StripeReturnPage() {
+  return (
+    <Suspense>
+      <StripeReturn />
+    </Suspense>
+  );
 }
