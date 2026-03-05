@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { useAuthStore } from "@/store/authStore";
 import { uploadOnboardingPhotos } from "@/lib/firebase/storage";
 import { isUsernameAvailable } from "@/lib/firebase/firestore";
@@ -35,6 +36,7 @@ const STEP_TITLES = ["Welcome", "Photos", "Personal", "About You", "Lifestyle", 
 const TOTAL = 8;
 
 export function OnboardingWizard() {
+  useAuth();
   const router = useRouter();
   const { uid, roommateUser, setRoommateUser } = useAuthStore();
   const [step, setStep] = useState(0);
