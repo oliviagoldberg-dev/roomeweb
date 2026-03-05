@@ -47,15 +47,22 @@ export function SignupForm() {
 
     setLoading(true);
     try {
-      const fbUser = await signUp(email, password, name);
+      const { user: fbUser, session } = await signUp(email, password, name);
 
       if (trimmedCode) {
         await redeemInviteCode(trimmedCode, fbUser.id);
         toast.success("Invite code applied! You're connected with your friend.");
       }
 
-      setFirebaseUser(null);
-      router.push("/auth/check-email");
+      if (session) {
+        // Email confirmation is off — session is ready, go straight to onboarding
+        setFirebaseUser(fbUser);
+        router.push("/onboarding");
+      } else {
+        // Email confirmation required — ask them to check their inbox
+        setFirebaseUser(null);
+        router.push("/auth/check-email");
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Sign up failed";
       toast.error(msg);

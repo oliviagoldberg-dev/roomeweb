@@ -16,11 +16,9 @@ export async function signUp(email: string, password: string, name = "") {
   const user = data.user;
   if (!user) throw new Error("Failed to create user");
 
-  // Profile is created after email verification via ensureProfile in useAuth.
-  // Attempting to upsert here fails because the user has no session yet
-  // (email not yet confirmed), so auth.uid() is null and RLS blocks the insert.
-
-  return user;
+  // Return session too — if email confirmation is disabled in Supabase,
+  // the session is available immediately and we can skip the check-email step.
+  return { user, session: data.session ?? null };
 }
 
 export async function signIn(email: string, password: string) {
