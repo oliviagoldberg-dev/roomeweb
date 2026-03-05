@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   Search,
   MessageSquare,
-  BookMarked,
   Users,
   User,
   Bell,
@@ -37,7 +36,6 @@ export default function HomePage() {
           { href: "/browse",        Icon: Search,        title: "Browse",        desc: "Find your roommate" },
           { href: "/messages",      Icon: MessageSquare, title: "Messages",      desc: "Chat with your connections" },
           { href: "/friends",       Icon: Users,         title: "Friends",       desc: "Grow your network" },
-          { href: "/listings",      Icon: BookMarked,    title: "Listings",      desc: "Save & share apartments" },
           { href: "/notifications", Icon: Bell,          title: "Notifications", desc: "See updates and alerts" },
           { href: "/profile",       Icon: User,          title: "Profile",       desc: "Manage your profile" },
         ].map(({ href, Icon, title, desc }) => (
