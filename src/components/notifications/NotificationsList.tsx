@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { listenToNotifications } from "@/lib/firebase/firestore";
+import { supabase } from "@/lib/supabase/client";
 import { useAuthStore } from "@/store/authStore";
 import { AppNotification } from "@/types/notifications";
 import { NotificationRow } from "./NotificationRow";
@@ -32,10 +33,15 @@ export function NotificationsList() {
     );
   }
 
+  async function handleDelete(id: string) {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    await supabase.from("notifications").delete().eq("id", id);
+  }
+
   return (
     <div className="bg-white rounded-2xl shadow-sm divide-y divide-gray-50">
       {notifications.map((n) => (
-        <NotificationRow key={n.id} notification={n} />
+        <NotificationRow key={n.id} notification={n} onDelete={handleDelete} />
       ))}
     </div>
   );
