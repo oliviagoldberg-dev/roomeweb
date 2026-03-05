@@ -181,7 +181,7 @@ export function FriendsList() {
         <div className="space-y-3">
           <div className="inline-flex items-center gap-2 py-1.5 rounded-xl text-black text-lg font-bold">
             Friend Requests
-            <span className="min-w-[18px] h-[18px] bg-roome-core text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+            <span className="min-w-[24px] h-[24px] bg-roome-core text-white text-sm font-bold rounded-full flex items-center justify-center px-1">
               {requests.length}
             </span>
           </div>
@@ -205,7 +205,7 @@ export function FriendsList() {
         <div className="space-y-3">
           <div className="inline-flex items-center gap-2 py-1.5 rounded-xl text-black text-lg font-bold">
             My Friends
-            <span className="min-w-[18px] h-[18px] bg-roome-core text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+            <span className="min-w-[24px] h-[24px] bg-roome-core text-white text-sm font-bold rounded-full flex items-center justify-center px-1">
               {friends.length}
             </span>
           </div>
