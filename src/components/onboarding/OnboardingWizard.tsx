@@ -212,12 +212,12 @@ export function OnboardingWizard() {
   };
 
   return (
-    <div className="min-h-screen bg-roome-offwhite flex flex-col">
+    <div className="min-h-[100dvh] bg-roome-offwhite flex flex-col">
       {step > 0 && (
         <ProgressBar step={step} total={TOTAL} label={STEP_TITLES[step]} onSkip={step < TOTAL - 1 ? next : undefined} />
       )}
       <div className="flex-1 overflow-y-auto px-6 py-4">{renderStep()}</div>
-      <div className="px-6 pb-8 pt-4 flex gap-3">
+      <div className="px-6 pb-[env(safe-area-inset-bottom,24px)] pt-4 flex gap-3 mb-4">
         {step > 0 && (
           <Button variant="secondary" onClick={back} className="flex-1" size="lg">Back</Button>
         )}
