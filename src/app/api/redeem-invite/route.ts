@@ -19,10 +19,20 @@ export async function POST(req: Request) {
     const { data: { user: newUser } } = await supabaseAdmin.auth.admin.getUserById(newUserUid);
     if (!newUser) return NextResponse.json({ error: "User not found" }, { status: 400 });
 
-    const { error } = await supabaseAdmin.from("friendships").insert({
-      users: [newUserUid, inviter.id], createdAt: new Date().toISOString(),
-    });
-    if (error) throw error;
+    // Guard against duplicate friendships
+    const { data: existing } = await supabaseAdmin
+      .from("friendships")
+      .select("id")
+      .contains("users", [newUserUid])
+      .contains("users", [inviter.id])
+      .maybeSingle();
+
+    if (!existing) {
+      const { error } = await supabaseAdmin.from("friendships").insert({
+        users: [newUserUid, inviter.id], createdAt: new Date().toISOString(),
+      });
+      if (error) throw error;
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {
