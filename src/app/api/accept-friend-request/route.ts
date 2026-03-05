@@ -13,10 +13,20 @@ export async function POST(req: Request) {
     const { requestId, fromUID } = await req.json();
 
     await supabaseAdmin.from("friendrequests").update({ status: "accepted" }).eq("id", requestId);
-    const { error } = await supabaseAdmin.from("friendships").insert({
-      users: [user.id, fromUID], createdAt: new Date().toISOString(),
-    });
-    if (error) throw error;
+
+    // Guard against duplicate friendships
+    const { data: existing } = await supabaseAdmin
+      .from("friendships")
+      .select("id")
+      .contains("users", [user.id])
+      .contains("users", [fromUID])
+      .maybeSingle();
+    if (!existing) {
+      const { error } = await supabaseAdmin.from("friendships").insert({
+        users: [user.id, fromUID], createdAt: new Date().toISOString(),
+      });
+      if (error) throw error;
+    }
 
     // Notify the original sender
     const { data: prefs } = await supabaseAdmin
