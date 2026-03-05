@@ -6,22 +6,18 @@ import { RoomeWordmark } from "@/components/ui/Wordmark";
 import { useAuthStore } from "@/store/authStore";
 import { Avatar } from "@/components/ui/Avatar";
 
-const PREVIEW_UID = "1096b0ff-c05d-48e5-98a7-14bab97826a0";
-
-const ALL_NAV = [
-  { href: "/home",          label: "Home",          previewOnly: false },
-  { href: "/browse",        label: "Browse",        previewOnly: false },
-  { href: "/messages",      label: "Messages",      previewOnly: false },
-  { href: "/friends",       label: "Friends",       previewOnly: false },
-  { href: "/listings",      label: "Listings",      previewOnly: true },
-  { href: "/notifications", label: "Notifications", previewOnly: false },
-  { href: "/profile",       label: "Profile",       previewOnly: false },
+const NAV = [
+  { href: "/home",          label: "Home" },
+  { href: "/browse",        label: "Browse" },
+  { href: "/messages",      label: "Messages" },
+  { href: "/friends",       label: "Friends" },
+  { href: "/notifications", label: "Notifications" },
+  { href: "/profile",       label: "Profile" },
 ];
 
 export function TopNav() {
-  const { roommateUser, uid } = useAuthStore();
+  const { roommateUser } = useAuthStore();
   const pathname = usePathname();
-  const NAV = ALL_NAV.filter((t) => !t.previewOnly || uid === PREVIEW_UID);
 
   return (
     <header className="sticky top-0 z-30 bg-roome-offwhite border-b border-gray-200">
