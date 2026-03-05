@@ -10,14 +10,24 @@ import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Home, FolderPlus, Share2, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { sendMessage, shareListingFolder } from "@/lib/firebase/firestore";
 import { useAuthStore } from "@/store/authStore";
 import { useConversations } from "@/hooks/useConversations";
 import { Avatar } from "@/components/ui/Avatar";
 
+const PREVIEW_UID = "1096b0ff-c05d-48e5-98a7-14bab97826a0";
+
 export default function ListingsPage() {
+  const router = useRouter();
   const { user } = useCurrentUser();
+  const { uid } = useAuthStore();
+
+  if (uid && uid !== PREVIEW_UID) {
+    router.replace("/home");
+    return null;
+  }
   const { listings, loading, addListing, removeListing } = useSavedListings();
   const { folders, addFolder, removeFolder } = useListingFolders();
   const { uid } = useAuthStore();

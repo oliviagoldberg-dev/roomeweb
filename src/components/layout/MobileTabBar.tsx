@@ -3,18 +3,23 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
 import { Home, Search, MessageSquare, Users, BookMarked, User } from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
 
-const TABS = [
-  { href: "/home",     Icon: Home, label: "Home"     },
-  { href: "/browse",   Icon: Search, label: "Browse"   },
-  { href: "/messages", Icon: MessageSquare, label: "Messages" },
-  { href: "/friends",  Icon: Users, label: "Friends"  },
-  { href: "/listings", Icon: BookMarked, label: "Listings" },
-  { href: "/profile",  Icon: User, label: "Profile"  },
+const PREVIEW_UID = "1096b0ff-c05d-48e5-98a7-14bab97826a0";
+
+const ALL_TABS = [
+  { href: "/home",     Icon: Home, label: "Home",     previewOnly: false },
+  { href: "/browse",   Icon: Search, label: "Browse",   previewOnly: false },
+  { href: "/messages", Icon: MessageSquare, label: "Messages", previewOnly: false },
+  { href: "/friends",  Icon: Users, label: "Friends",  previewOnly: false },
+  { href: "/listings", Icon: BookMarked, label: "Listings", previewOnly: true },
+  { href: "/profile",  Icon: User, label: "Profile",  previewOnly: false },
 ];
 
 export function MobileTabBar() {
   const pathname = usePathname();
+  const { uid } = useAuthStore();
+  const TABS = ALL_TABS.filter((t) => !t.previewOnly || uid === PREVIEW_UID);
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-roome-offwhite border-t border-gray-200 z-50 flex">
       {TABS.map(({ href, Icon, label }) => {
