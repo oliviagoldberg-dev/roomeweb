@@ -9,7 +9,7 @@ import { AddListingModal } from "@/components/listings/AddListingModal";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Home, FolderPlus, Share2, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { sendMessage, shareListingFolder } from "@/lib/firebase/firestore";
@@ -23,14 +23,8 @@ export default function ListingsPage() {
   const router = useRouter();
   const { user } = useCurrentUser();
   const { uid } = useAuthStore();
-
-  if (uid && uid !== PREVIEW_UID) {
-    router.replace("/home");
-    return null;
-  }
   const { listings, loading, addListing, removeListing } = useSavedListings();
   const { folders, addFolder, removeFolder } = useListingFolders();
-  const { uid } = useAuthStore();
   const { convos } = useConversations();
   const { addListingModalOpen, setAddListingModalOpen } = useUiStore();
   const [activeFolderId, setActiveFolderId] = useState<string | "all">("all");
@@ -40,6 +34,14 @@ export default function ListingsPage() {
   const [shareFolderId, setShareFolderId] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [sharing, setSharing] = useState(false);
+
+  useEffect(() => {
+    if (uid && uid !== PREVIEW_UID) {
+      router.replace("/home");
+    }
+  }, [uid, router]);
+
+  if (uid && uid !== PREVIEW_UID) return null;
 
   const visibleListings = activeFolderId === "all"
     ? listings
