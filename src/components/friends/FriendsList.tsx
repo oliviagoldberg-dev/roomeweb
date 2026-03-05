@@ -179,7 +179,7 @@ export function FriendsList() {
       {/* Pending requests */}
       {search.length < 3 && (
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-black text-lg font-bold">
+          <div className="inline-flex items-center gap-2 py-1.5 rounded-xl text-black text-lg font-bold">
             Friend Requests
             <span className="min-w-[18px] h-[18px] bg-roome-core text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
               {requests.length}
@@ -203,7 +203,7 @@ export function FriendsList() {
       {/* Friends list */}
       {search.length < 3 && (
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-black text-lg font-bold">
+          <div className="inline-flex items-center gap-2 py-1.5 rounded-xl text-black text-lg font-bold">
             My Friends
             <span className="min-w-[18px] h-[18px] bg-roome-core text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
               {friends.length}
