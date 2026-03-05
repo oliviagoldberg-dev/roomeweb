@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { sendFriendAcceptedEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
   try {
@@ -29,18 +30,23 @@ export async function POST(req: Request) {
     }
 
     // Notify the original sender
-    const { data: prefs } = await supabaseAdmin
-      .from("profiles").select("notifyFriendRequests").eq("id", fromUID).single();
-    if (prefs?.notifyFriendRequests !== false) {
-      const { data: accepter } = await supabaseAdmin
-        .from("profiles").select("name, username").eq("id", user.id).single();
-      const accepterName = accepter?.name || accepter?.username || "Someone";
+    const { data: accepter } = await supabaseAdmin
+      .from("profiles").select("name, username").eq("id", user.id).single();
+    const accepterName = accepter?.name || accepter?.username || "Someone";
+
+    const { data: requester } = await supabaseAdmin
+      .from("profiles").select("email, notifyFriendRequests").eq("id", fromUID).single();
+
+    if (requester?.notifyFriendRequests !== false) {
       await supabaseAdmin.from("notifications").insert({
         toUID: fromUID, fromUID: user.id, type: "friend_accepted",
         title: "Friend request accepted",
         body: `${accepterName} accepted your friend request.`,
         read: false, createdAt: new Date().toISOString(),
       });
+      if (requester?.email) {
+        sendFriendAcceptedEmail(requester.email, accepterName).catch(() => {});
+      }
     }
     return NextResponse.json({ ok: true });
   } catch (err: any) {

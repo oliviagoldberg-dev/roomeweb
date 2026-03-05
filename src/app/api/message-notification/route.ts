@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { sendMessageEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
   try {
@@ -12,17 +13,24 @@ export async function POST(req: Request) {
 
     const { toUID, text } = await req.json();
 
-    const { data: prefs } = await supabaseAdmin
-      .from("profiles").select("notifyMessages").eq("id", toUID).single();
-    if (prefs?.notifyMessages !== false) {
-      const { data: sender } = await supabaseAdmin
-        .from("profiles").select("name").eq("id", user.id).single();
+    const { data: sender } = await supabaseAdmin
+      .from("profiles").select("name").eq("id", user.id).single();
+    const senderName = sender?.name ?? "Someone";
+    const preview = text.length > 80 ? text.slice(0, 80) + "…" : text;
+
+    const { data: recipient } = await supabaseAdmin
+      .from("profiles").select("email, notifyMessages").eq("id", toUID).single();
+
+    if (recipient?.notifyMessages !== false) {
       await supabaseAdmin.from("notifications").insert({
         toUID, fromUID: user.id, type: "message",
-        title: `New message from ${sender?.name ?? "Someone"}`,
-        body: text.length > 80 ? text.slice(0, 80) + "…" : text,
+        title: `New message from ${senderName}`,
+        body: preview,
         read: false, createdAt: new Date().toISOString(),
       });
+      if (recipient?.email) {
+        sendMessageEmail(recipient.email, senderName, preview).catch(() => {});
+      }
     }
     return NextResponse.json({ ok: true });
   } catch (err: any) {

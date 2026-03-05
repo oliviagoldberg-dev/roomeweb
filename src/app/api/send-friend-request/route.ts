@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { sendFriendRequestEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
   try {
@@ -17,17 +18,23 @@ export async function POST(req: Request) {
       .insert({ fromUID: user.id, toUID, status: "pending", timestamp: new Date().toISOString() });
     if (error) throw error;
 
-    const { data: prefs } = await supabaseAdmin
-      .from("profiles").select("notifyFriendRequests").eq("id", toUID).single();
-    if (prefs?.notifyFriendRequests !== false) {
-      const { data: sender } = await supabaseAdmin
-        .from("profiles").select("name").eq("id", user.id).single();
+    const { data: sender } = await supabaseAdmin
+      .from("profiles").select("name").eq("id", user.id).single();
+    const senderName = sender?.name ?? "Someone";
+
+    const { data: recipient } = await supabaseAdmin
+      .from("profiles").select("email, notifyFriendRequests").eq("id", toUID).single();
+
+    if (recipient?.notifyFriendRequests !== false) {
       await supabaseAdmin.from("notifications").insert({
         toUID, fromUID: user.id, type: "friend_request",
         title: "New friend request",
-        body: `${sender?.name ?? "Someone"} sent you a friend request.`,
+        body: `${senderName} sent you a friend request.`,
         read: false, createdAt: new Date().toISOString(),
       });
+      if (recipient?.email) {
+        sendFriendRequestEmail(recipient.email, senderName).catch(() => {});
+      }
     }
     return NextResponse.json({ ok: true });
   } catch (err: any) {
