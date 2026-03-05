@@ -17,14 +17,16 @@ import { useConversations } from "@/hooks/useConversations";
 import { cn } from "@/lib/utils/cn";
 import { RoomeWordmark } from "@/components/ui/Wordmark";
 
-const NAV = [
-  { href: "/home",          label: "Home",          Icon: Home },
-  { href: "/browse",        label: "Browse",        Icon: Search },
-  { href: "/messages",      label: "Messages",      Icon: MessageSquare },
-  { href: "/friends",       label: "Friends",       Icon: Users },
-  { href: "/listings",      label: "Listings",      Icon: BookMarked },
-  { href: "/notifications", label: "Notifications", Icon: Bell },
-  { href: "/profile",       label: "Profile",       Icon: User },
+const PREVIEW_UID = "1096b0ff-c05d-48e5-98a7-14bab97826a0";
+
+const ALL_NAV = [
+  { href: "/home",          label: "Home",          Icon: Home,          previewOnly: false },
+  { href: "/browse",        label: "Browse",        Icon: Search,        previewOnly: false },
+  { href: "/messages",      label: "Messages",      Icon: MessageSquare, previewOnly: false },
+  { href: "/friends",       label: "Friends",       Icon: Users,         previewOnly: false },
+  { href: "/listings",      label: "Listings",      Icon: BookMarked,    previewOnly: true },
+  { href: "/notifications", label: "Notifications", Icon: Bell,          previewOnly: false },
+  { href: "/profile",       label: "Profile",       Icon: User,          previewOnly: false },
 ];
 
 interface SidebarProps {
@@ -37,6 +39,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const router = useRouter();
   const { clear, uid } = useAuthStore();
   const { convos } = useConversations();
+  const NAV = ALL_NAV.filter((t) => !t.previewOnly || uid === PREVIEW_UID);
   const unreadTotal = convos.reduce((sum, c) => sum + (c.unreadCount?.[uid ?? ""] ?? 0), 0);
 
   async function handleSignOut() {
