@@ -107,7 +107,7 @@ export default function VerificationPage() {
             />
             <div className="flex gap-2">
               <Button type="submit" loading={loading} size="sm">Confirm</Button>
-              <Button type="button" variant="ghost" size="sm" onClick={() => setStep("email")}>Resend</Button>
+              <Button type="button" variant="secondary" size="sm" onClick={() => setStep("email")}>Resend</Button>
             </div>
           </form>
         )}
