@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { listenToNotifications } from "@/lib/firebase/firestore";
 import { supabase } from "@/lib/supabase/client";
 import { useAuthStore } from "@/store/authStore";
@@ -12,11 +12,12 @@ export function NotificationsList() {
   const { uid } = useAuthStore();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
+  const deletedIds = useRef(new Set<string>());
 
   useEffect(() => {
     if (!uid) { setLoading(false); return; }
     const unsub = listenToNotifications(uid, (rows) => {
-      setNotifications(rows as AppNotification[]);
+      setNotifications((rows as AppNotification[]).filter((n) => !deletedIds.current.has(n.id)));
       setLoading(false);
     });
     return unsub;
@@ -34,6 +35,7 @@ export function NotificationsList() {
   }
 
   async function handleDelete(id: string) {
+    deletedIds.current.add(id);
     setNotifications((prev) => prev.filter((n) => n.id !== id));
     await supabase.from("notifications").delete().eq("id", id);
   }
