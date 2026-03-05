@@ -135,7 +135,7 @@ export function SavedListingCard({ listing, folders, onFolderChange, onDeleted }
       <div className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-2">
         <div className="flex items-center gap-2 flex-wrap">
           <Badge color="blue" className="text-[11px]">{priceLabel}</Badge>
-          <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-roome-core/15 text-roome-core font-medium">
+          <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-roome-core/15 text-black font-medium">
             {sourceLabel}
           </span>
           {listing.beds && <Badge color="gray" className="text-[11px]">{listing.beds} bd</Badge>}
@@ -192,7 +192,7 @@ export function SavedListingCard({ listing, folders, onFolderChange, onDeleted }
           <Button
             variant="secondary"
             size="sm"
-            className="flex-1 inline-flex items-center justify-center gap-2"
+            className="flex-1 inline-flex items-center justify-center gap-2 text-black"
             onClick={() => setShareOpen(true)}
           >
             <Share2 className="w-3.5 h-3.5" />
@@ -201,7 +201,7 @@ export function SavedListingCard({ listing, folders, onFolderChange, onDeleted }
           <Button
             variant="secondary"
             size="sm"
-            className="inline-flex items-center justify-center gap-2"
+            className="inline-flex items-center justify-center gap-2 text-black"
             onClick={() => setMoveOpen(true)}
           >
             <Folder className="w-3.5 h-3.5" />
@@ -210,7 +210,7 @@ export function SavedListingCard({ listing, folders, onFolderChange, onDeleted }
           <Button
             variant="secondary"
             size="sm"
-            className="inline-flex items-center justify-center gap-2"
+            className="inline-flex items-center justify-center gap-2 text-black"
             onClick={() => setEditOpen(true)}
           >
             <Pencil className="w-3.5 h-3.5" />

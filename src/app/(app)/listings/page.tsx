@@ -79,7 +79,7 @@ export default function ListingsPage() {
           <Button
             size="sm"
             variant="secondary"
-            className="inline-flex items-center gap-2"
+            className="inline-flex items-center gap-2 text-black"
             onClick={() => setNewFolderOpen(true)}
           >
             <FolderPlus className="w-4 h-4" />
@@ -96,7 +96,7 @@ export default function ListingsPage() {
           <button
             onClick={() => setActiveFolderId("all")}
             className={`px-3 py-1.5 rounded-xl text-sm font-medium ${
-              activeFolderId === "all" ? "bg-roome-core text-white" : "bg-roome-core/10 text-roome-core"
+              activeFolderId === "all" ? "bg-roome-core text-white" : "bg-roome-core/10 text-black"
             }`}
           >
             All
@@ -106,7 +106,7 @@ export default function ListingsPage() {
               <button
                 onClick={() => setActiveFolderId(f.id)}
                 className={`px-3 py-1.5 rounded-xl text-sm font-medium ${
-                  activeFolderId === f.id ? "bg-roome-core text-white" : "bg-roome-core/10 text-roome-core"
+                  activeFolderId === f.id ? "bg-roome-core text-white" : "bg-roome-core/10 text-black"
                 }`}
               >
                 {f.name}
