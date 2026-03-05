@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     }).eq("id", uid);
 
     const resend = new Resend(process.env.RESEND_API_KEY);
-    await resend.emails.send({
+    const { error: resendError } = await resend.emails.send({
       from: "ROOMe <hello@roomeofficial.com>",
       to: schoolEmail,
       subject: "Your ROOMe school verification code",
@@ -32,6 +32,11 @@ export async function POST(req: Request) {
         </div>
       `,
     });
+
+    if (resendError) {
+      console.error("Resend error:", resendError);
+      return NextResponse.json({ error: resendError.message }, { status: 500 });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {
