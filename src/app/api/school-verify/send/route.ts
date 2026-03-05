@@ -20,7 +20,7 @@ export async function POST(req: Request) {
 
     const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
-      from: "ROOMe <onboarding@resend.dev>",
+      from: "ROOMe <hello@roomeofficial.com>",
       to: schoolEmail,
       subject: "Your ROOMe school verification code",
       html: `
