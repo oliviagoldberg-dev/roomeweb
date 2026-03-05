@@ -23,7 +23,6 @@ export function SignupForm() {
     const invite = searchParams.get("invite");
     if (invite) {
       setInviteCode(invite.toUpperCase());
-      setCodeStatus("idle");
     }
   }, [searchParams]);
 
