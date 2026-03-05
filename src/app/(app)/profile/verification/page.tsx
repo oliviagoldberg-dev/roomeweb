@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
+import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
@@ -15,6 +16,21 @@ export default function VerificationPage() {
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"email" | "code" | "done">("email");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!uid) return;
+    supabase
+      .from("profiles")
+      .select("schoolVerified, schoolEmail")
+      .eq("id", uid)
+      .single()
+      .then(({ data }) => {
+        if (data?.schoolVerified) {
+          setSchoolEmail(data.schoolEmail ?? "");
+          setStep("done");
+        }
+      });
+  }, [uid]);
 
   async function handleSendCode(e: React.FormEvent) {
     e.preventDefault();
