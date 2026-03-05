@@ -49,16 +49,16 @@ export default function HomePage() {
             <p className="text-xs text-gray-500">{desc}</p>
           </Link>
         ))}
+        {user && (
+          <div className="bg-roome-core/10 rounded-2xl p-5 flex flex-col gap-1">
+            <p className="text-xs font-semibold text-roome-core">Your budget</p>
+            <p className="text-lg font-black text-roome-black leading-tight">
+              ${user.budgetMin?.toLocaleString()} – ${user.budgetMax?.toLocaleString()}
+            </p>
+            <p className="text-xs text-roome-black/60">/mo</p>
+          </div>
+        )}
       </div>
-
-      {user && (
-        <div className="bg-roome-core/10 rounded-2xl p-5 space-y-1">
-          <p className="font-semibold text-roome-core">Your budget</p>
-          <p className="text-2xl font-black text-roome-black">
-            ${user.budgetMin?.toLocaleString()} – ${user.budgetMax?.toLocaleString()}<span className="text-base font-normal text-roome-black/70">/mo</span>
-          </p>
-        </div>
-      )}
     </div>
   );
 }
