@@ -51,6 +51,7 @@ export function OnboardingWizard() {
 
   // Personal
   const [name, setName] = useState(roommateUser?.name ?? "");
+  const [email, setEmail] = useState(roommateUser?.email ?? "");
   const [username, setUsername] = useState(roommateUser?.username ?? "");
   const [phone, setPhone] = useState("");
   const [age, setAge] = useState("");
@@ -122,7 +123,7 @@ export function OnboardingWizard() {
       const reordered = mainUrl ? [mainUrl, ...photoURLs.filter((_, i) => i !== mainPhotoIdx)] : photoURLs;
 
       const data = {
-        uid, name: name.trim(), username: normalizedUsername, phone, age,
+        uid, name: name.trim(), email: email.trim(), username: normalizedUsername, phone, age,
         occupation, company, hometown, university,
         hasPet, smokes, host, workFromHome, cleanliness, sleepSchedule,
         budgetMin, budgetMax, beds, baths, furnished, leaseLength,
@@ -147,7 +148,7 @@ export function OnboardingWizard() {
         const err = await res.json();
         throw new Error(err.error ?? "Failed to save");
       }
-      setRoommateUser({ ...data, id: uid, email: roommateUser?.email ?? "" } as never);
+      setRoommateUser({ ...data, id: uid } as never);
       router.push("/home");
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to save profile");
@@ -163,10 +164,10 @@ export function OnboardingWizard() {
       case 2: return (
         <PersonalStep
           name={name} setName={setName}
+          email={email} setEmail={setEmail}
           username={username} setUsername={setUsername}
           phone={phone} setPhone={setPhone}
           age={age} setAge={setAge}
-          email={roommateUser?.email ?? ""}
         />
       );
       case 3: return (
@@ -311,9 +312,9 @@ function PhotosStep({ previews, onChange, mainIdx, onSelectMain }: {
   );
 }
 
-function PersonalStep({ name, setName, email, username, setUsername, phone, setPhone, age, setAge }: {
+function PersonalStep({ name, setName, email, setEmail, username, setUsername, phone, setPhone, age, setAge }: {
   name: string; setName: (v: string) => void;
-  email: string;
+  email: string; setEmail: (v: string) => void;
   username: string; setUsername: (v: string) => void;
   phone: string; setPhone: (v: string) => void;
   age: string; setAge: (v: string) => void;
@@ -322,10 +323,7 @@ function PersonalStep({ name, setName, email, username, setUsername, phone, setP
     <div className="space-y-4 py-4">
       <h2 className="text-2xl font-bold font-heading text-center">Personal Info</h2>
       <Field label="Full Name" placeholder="Your full name" value={name} onChange={setName} />
-      <Card>
-        <p className="text-xs text-gray-400 mb-0.5">Email</p>
-        <p className="font-semibold text-roome-black">{email}</p>
-      </Card>
+      <Field label="Email" placeholder="your@email.com" value={email} onChange={setEmail} type="email" />
       <Field label="Username" placeholder="@yourhandle" value={username}
         onChange={(v) => setUsername(v.toLowerCase().replace(/\s/g, ""))} />
       <Field label="Phone Number" placeholder="+1 (555) 000-0000" value={phone} onChange={setPhone} type="tel" />
