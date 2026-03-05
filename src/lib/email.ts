@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = "ROOMe <onboarding@resend.dev>";
+const FROM = "ROOMe <hello@roomeofficial.com>";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://roomeofficial.com";
 
 export async function sendFriendRequestEmail(toEmail: string, senderName: string) {
