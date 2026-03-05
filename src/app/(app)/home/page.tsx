@@ -8,6 +8,7 @@ import {
   Users,
   User,
   Bell,
+  DollarSign,
 } from "lucide-react";
 import { RoomeWordmark } from "@/components/ui/Wordmark";
 
@@ -50,12 +51,12 @@ export default function HomePage() {
           </Link>
         ))}
         {user && (
-          <div className="bg-roome-core/10 rounded-2xl p-5 flex flex-col gap-1">
-            <p className="text-xs font-semibold text-roome-core">Your budget</p>
-            <p className="text-lg font-black text-roome-black leading-tight">
-              ${user.budgetMin?.toLocaleString()} – ${user.budgetMax?.toLocaleString()}
+          <div className="bg-white rounded-2xl p-5 shadow-sm flex flex-col gap-2">
+            <DollarSign className="w-6 h-6 text-roome-core" />
+            <p className="font-bold text-gray-900">Your budget</p>
+            <p className="text-xs text-gray-500">
+              ${user.budgetMin?.toLocaleString()} – ${user.budgetMax?.toLocaleString()}/mo
             </p>
-            <p className="text-xs text-roome-black/60">/mo</p>
           </div>
         )}
       </div>
