@@ -50,6 +50,7 @@ export function OnboardingWizard() {
   const [cropOpen, setCropOpen] = useState(false);
 
   // Personal
+  const [name, setName] = useState(roommateUser?.name ?? "");
   const [username, setUsername] = useState(roommateUser?.username ?? "");
   const [phone, setPhone] = useState("");
   const [age, setAge] = useState("");
@@ -121,7 +122,7 @@ export function OnboardingWizard() {
       const reordered = mainUrl ? [mainUrl, ...photoURLs.filter((_, i) => i !== mainPhotoIdx)] : photoURLs;
 
       const data = {
-        uid, username: normalizedUsername, phone, age,
+        uid, name: name.trim(), username: normalizedUsername, phone, age,
         occupation, company, hometown, university,
         hasPet, smokes, host, workFromHome, cleanliness, sleepSchedule,
         budgetMin, budgetMax, beds, baths, furnished, leaseLength,
@@ -146,7 +147,7 @@ export function OnboardingWizard() {
         const err = await res.json();
         throw new Error(err.error ?? "Failed to save");
       }
-      setRoommateUser({ ...data, id: uid, name: roommateUser?.name ?? "", email: roommateUser?.email ?? "" } as never);
+      setRoommateUser({ ...data, id: uid, email: roommateUser?.email ?? "" } as never);
       router.push("/home");
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to save profile");
@@ -161,11 +162,11 @@ export function OnboardingWizard() {
       case 1: return <PhotosStep previews={photoPreviews} onChange={handlePhotoChange} mainIdx={mainPhotoIdx} onSelectMain={setMainPhotoIdx} />;
       case 2: return (
         <PersonalStep
+          name={name} setName={setName}
           username={username} setUsername={setUsername}
           phone={phone} setPhone={setPhone}
           age={age} setAge={setAge}
           email={roommateUser?.email ?? ""}
-          name={roommateUser?.name ?? ""}
         />
       );
       case 3: return (
@@ -302,7 +303,7 @@ function PhotosStep({ previews, onChange, mainIdx, onSelectMain }: {
       </div>
       <label className="block text-center">
         <span className="inline-block bg-roome-pale text-roome-deep font-semibold px-6 py-3 rounded-2xl cursor-pointer hover:opacity-80 transition">
-          Choose Photos (up to 5)
+          Choose Photos (5)
         </span>
         <input type="file" accept="image/*" multiple className="hidden" onChange={onChange} />
       </label>
@@ -310,8 +311,9 @@ function PhotosStep({ previews, onChange, mainIdx, onSelectMain }: {
   );
 }
 
-function PersonalStep({ name, email, username, setUsername, phone, setPhone, age, setAge }: {
-  name: string; email: string;
+function PersonalStep({ name, setName, email, username, setUsername, phone, setPhone, age, setAge }: {
+  name: string; setName: (v: string) => void;
+  email: string;
   username: string; setUsername: (v: string) => void;
   phone: string; setPhone: (v: string) => void;
   age: string; setAge: (v: string) => void;
@@ -319,10 +321,7 @@ function PersonalStep({ name, email, username, setUsername, phone, setPhone, age
   return (
     <div className="space-y-4 py-4">
       <h2 className="text-2xl font-bold font-heading text-center">Personal Info</h2>
-      <Card>
-        <p className="text-xs text-gray-400 mb-0.5">Full Name</p>
-        <p className="font-semibold text-roome-black">{name}</p>
-      </Card>
+      <Field label="Full Name" placeholder="Your full name" value={name} onChange={setName} />
       <Card>
         <p className="text-xs text-gray-400 mb-0.5">Email</p>
         <p className="font-semibold text-roome-black">{email}</p>
