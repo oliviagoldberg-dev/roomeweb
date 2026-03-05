@@ -302,7 +302,7 @@ function PhotosStep({ previews, onChange, mainIdx, onSelectMain }: {
         })}
       </div>
       <label className="block text-center">
-        <span className="inline-block bg-roome-pale text-roome-deep font-semibold px-6 py-3 rounded-2xl cursor-pointer hover:opacity-80 transition">
+        <span className="inline-block bg-roome-core/20 text-roome-core font-semibold px-6 py-3 text-base rounded-2xl cursor-pointer hover:bg-roome-core/30 transition-colors focus:outline-none focus:ring-2 focus:ring-roome-core/50">
           Choose Photos (5)
         </span>
         <input type="file" accept="image/*" multiple className="hidden" onChange={onChange} />
