@@ -68,7 +68,7 @@ export default function BrowsePage() {
         <div className="space-y-8">
           {friendsInCity.length > 0 && (
             <section>
-              <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-3">
+              <h2 className="text-sm font-bold uppercase tracking-widest text-[#38b6ff] mb-3">
                 Friends in your city
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
