@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBrowseUsers } from "@/hooks/useBrowseUsers";
+import { useFriendsInCity } from "@/hooks/useFriendsInCity";
 import { useAuthStore } from "@/store/authStore";
 import { useUiStore } from "@/store/uiStore";
 import { RoommateCard } from "@/components/browse/RoommateCard";
@@ -15,6 +16,7 @@ import { Search, SlidersHorizontal } from "lucide-react";
 export default function BrowsePage() {
   const router = useRouter();
   const { users, loading } = useBrowseUsers();
+  const { friends: friendsInCity } = useFriendsInCity();
   const { roommateUser } = useAuthStore();
   const { filters } = useUiStore();
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -28,6 +30,9 @@ export default function BrowsePage() {
     if (filters.sleepSchedule && u.sleepSchedule !== filters.sleepSchedule) return false;
     return true;
   });
+
+  const friendIds = new Set(friendsInCity.map((f) => f.id));
+  const others = filtered.filter((u) => !friendIds.has(u.id));
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
@@ -59,17 +64,41 @@ export default function BrowsePage() {
 
       {loading ? (
         <div className="flex justify-center pt-20"><LoadingSpinner /></div>
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
-          <Search className="w-10 h-10 mx-auto mb-3 text-gray-300" />
-          <p className="font-semibold">No roommates found</p>
-          <p className="text-sm">Try adjusting your filters</p>
-        </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((u) => (
-            <RoommateCard key={u.id} user={u} onClick={() => setSelected(u)} />
-          ))}
+        <div className="space-y-8">
+          {friendsInCity.length > 0 && (
+            <section>
+              <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-3">
+                Friends in your city
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {friendsInCity.map((u) => (
+                  <RoommateCard key={u.id} user={u} onClick={() => setSelected(u)} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {others.length > 0 ? (
+            <section>
+              {friendsInCity.length > 0 && (
+                <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-3">
+                  Everyone
+                </h2>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {others.map((u) => (
+                  <RoommateCard key={u.id} user={u} onClick={() => setSelected(u)} />
+                ))}
+              </div>
+            </section>
+          ) : friendsInCity.length === 0 ? (
+            <div className="text-center py-20 text-gray-400">
+              <Search className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+              <p className="font-semibold">No roommates found</p>
+              <p className="text-sm">Try adjusting your filters</p>
+            </div>
+          ) : null}
         </div>
       )}
 

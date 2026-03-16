@@ -180,6 +180,7 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
         <Dialog.Content className="fixed inset-x-4 top-[5%] bottom-[5%] sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-lg bg-white rounded-3xl z-50 overflow-y-auto shadow-2xl">
+          <Dialog.Title className="sr-only">{user.name}</Dialog.Title>
           <div className="relative">
             <PhotoSwiper photos={photos} name={user.name} />
             <Dialog.Close asChild>
@@ -216,11 +217,11 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
             </div>
 
             <div className="flex gap-3 pt-2">
-              <Button variant="secondary" onClick={handleMessage} loading={messaging} className="flex-1 gap-2">
+              <Button variant="secondary" onClick={handleMessage} loading={messaging} className="flex-1 inline-flex items-center justify-center gap-2">
                 <MessageSquare className="w-4 h-4" />
                 Message
               </Button>
-              <Button onClick={handleLike} loading={liking} className="flex-1 gap-2">
+              <Button onClick={handleLike} loading={liking} className="flex-1 inline-flex items-center justify-center gap-2">
                 <Heart className="w-4 h-4" />
                 Like
               </Button>

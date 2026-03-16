@@ -1,5 +1,6 @@
 "use client";
 import { supabase } from "@/lib/supabase/client";
+import { RoommateUser } from "@/types/user";
 
 // ─── Users ────────────────────────────────────────────────────────────────────
 
@@ -92,15 +93,45 @@ export async function isUsernameAvailable(username: string, uid?: string): Promi
   return false;
 }
 
+export async function fetchFriendsInCity(uid: string, city: string): Promise<RoommateUser[]> {
+  const { data: friendships } = await supabase
+    .from("friendships")
+    .select("users")
+    .contains("users", [uid]);
+
+  if (!friendships || friendships.length === 0) return [];
+
+  const friendUids = (friendships as { users: string[] }[])
+    .flatMap((r) => r.users)
+    .filter((u) => u !== uid);
+
+  if (friendUids.length === 0) return [];
+
+  const [{ data: byMoveCity }, { data: byCity }] = await Promise.all([
+    supabase.from("profiles").select("*").in("id", friendUids).eq("moveCity", city),
+    supabase.from("profiles").select("*").in("id", friendUids).eq("city", city),
+  ]);
+
+  const seen = new Set<string>();
+  const results: RoommateUser[] = [];
+  for (const row of [...(byMoveCity ?? []), ...(byCity ?? [])]) {
+    if (!seen.has(row.id)) { seen.add(row.id); results.push(row as RoommateUser); }
+  }
+  return results;
+}
+
 export async function fetchUsersInCity(city: string, excludeUid: string) {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .or(`moveCity.eq.${city},city.eq.${city}`)
-    .eq("onboardingComplete", true)
-    .neq("id", excludeUid);
-  if (error) return [];
-  return data ?? [];
+  const [{ data: byMoveCity }, { data: byCity }] = await Promise.all([
+    supabase.from("profiles").select("*").eq("moveCity", city).eq("onboardingComplete", true).neq("id", excludeUid),
+    supabase.from("profiles").select("*").eq("city", city).eq("onboardingComplete", true).neq("id", excludeUid),
+  ]);
+
+  const seen = new Set<string>();
+  const results: any[] = [];
+  for (const row of [...(byMoveCity ?? []), ...(byCity ?? [])]) {
+    if (!seen.has(row.id)) { seen.add(row.id); results.push(row); }
+  }
+  return results;
 }
 
 // ─── Block / Report ───────────────────────────────────────────────────────────
