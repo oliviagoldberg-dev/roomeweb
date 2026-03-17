@@ -16,6 +16,7 @@ import { Heart, MessageSquare, PawPrint, X, Star } from "lucide-react";
 interface UserDetailModalProps {
   user: RoommateUser;
   onClose: () => void;
+  onDismiss?: () => void;
   onNext?: () => void;
   onPrev?: () => void;
 }
@@ -88,7 +89,7 @@ export function PhotoSwiper({ photos, name, heightClass = "h-64" }: { photos: st
   );
 }
 
-export function UserDetailModal({ user, onClose, onNext, onPrev }: UserDetailModalProps) {
+export function UserDetailModal({ user, onClose, onDismiss, onNext, onPrev }: UserDetailModalProps) {
   const { uid } = useAuthStore();
   const { canConnect } = useSubscription();
   const router = useRouter();
@@ -221,10 +222,9 @@ export function UserDetailModal({ user, onClose, onNext, onPrev }: UserDetailMod
             {/* Desktop nav buttons */}
             <div className="flex items-center justify-center gap-4 pt-1">
               <button
-                onClick={onPrev}
-                disabled={!onPrev}
-                title="Previous"
-                className="w-14 h-14 rounded-full bg-red-400 flex items-center justify-center text-white shadow-lg hover:bg-red-500 disabled:opacity-30 transition-colors"
+                onClick={onDismiss ?? onClose}
+                title="Pass"
+                className="w-14 h-14 rounded-full bg-red-400 flex items-center justify-center text-white shadow-lg hover:bg-red-500 transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>

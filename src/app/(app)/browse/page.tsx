@@ -23,6 +23,8 @@ export default function BrowsePage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [selected, setSelected] = useState<RoommateUser | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [selectedSection, setSelectedSection] = useState<"friends" | "everyone">("everyone");
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
 
   const filtered = users.filter((u) => {
     if (u.budgetMax < filters.budgetMin) return false;
@@ -34,13 +36,29 @@ export default function BrowsePage() {
   });
 
   const friendIds = new Set(friendsInCity.map((f) => f.id));
-  const others = filtered.filter((u) => !friendIds.has(u.id));
-  const allUsers = [...friendsInCity, ...others];
+  const others = filtered.filter((u) => !friendIds.has(u.id) && !dismissedIds.has(u.id));
 
-  function openUser(user: RoommateUser) {
-    const idx = allUsers.findIndex((u) => u.id === user.id);
+  function openUser(user: RoommateUser, section: "friends" | "everyone") {
+    const list = section === "friends" ? friendsInCity : others;
+    const idx = list.findIndex((u) => u.id === user.id);
+    setSelectedSection(section);
     setSelectedIndex(idx >= 0 ? idx : 0);
     setSelected(user);
+  }
+
+  function handleDismiss() {
+    if (!selected) return;
+    if (selectedSection === "everyone") {
+      setDismissedIds((prev) => new Set(prev).add(selected.id));
+      // Advance to next in Everyone (accounting for the one being removed)
+      const nextIdx = selectedIndex; // same index = next item after removal
+      const remaining = others.filter((u) => u.id !== selected.id);
+      const next = remaining[nextIdx] ?? remaining[nextIdx - 1] ?? null;
+      setSelected(next);
+      setSelectedIndex(next ? Math.min(nextIdx, remaining.length - 1) : 0);
+    } else {
+      setSelected(null);
+    }
   }
 
   return (
@@ -82,7 +100,7 @@ export default function BrowsePage() {
                 <h2 className="text-sm font-bold uppercase tracking-widest text-[#38b6ff] mb-3">
                   Friends in your city
                 </h2>
-                <SwipeDeck users={friendsInCity} onCardClick={openUser} />
+                <SwipeDeck users={friendsInCity} onCardClick={(u) => openUser(u, "friends")} />
               </div>
             )}
             {others.length > 0 && (
@@ -92,7 +110,7 @@ export default function BrowsePage() {
                     Everyone
                   </h2>
                 )}
-                <SwipeDeck users={others} onCardClick={openUser} />
+                <SwipeDeck users={others} onCardClick={(u) => openUser(u, "everyone")} />
               </div>
             )}
             {filtered.length === 0 && (
@@ -113,7 +131,7 @@ export default function BrowsePage() {
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {friendsInCity.map((u) => (
-                    <RoommateCard key={u.id} user={u} onClick={() => openUser(u)} />
+                    <RoommateCard key={u.id} user={u} onClick={() => openUser(u, "friends")} />
                   ))}
                 </div>
               </section>
@@ -127,7 +145,7 @@ export default function BrowsePage() {
                 )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {others.map((u) => (
-                    <RoommateCard key={u.id} user={u} onClick={() => openUser(u)} />
+                    <RoommateCard key={u.id} user={u} onClick={() => openUser(u, "everyone")} />
                   ))}
                 </div>
               </section>
@@ -147,12 +165,15 @@ export default function BrowsePage() {
         <UserDetailModal
           user={selected}
           onClose={() => setSelected(null)}
+          onDismiss={handleDismiss}
           onNext={() => {
-            const next = allUsers[selectedIndex + 1];
+            const list = selectedSection === "friends" ? friendsInCity : others;
+            const next = list[selectedIndex + 1];
             if (next) { setSelectedIndex(selectedIndex + 1); setSelected(next); }
           }}
           onPrev={() => {
-            const prev = allUsers[selectedIndex - 1];
+            const list = selectedSection === "friends" ? friendsInCity : others;
+            const prev = list[selectedIndex - 1];
             if (prev) { setSelectedIndex(selectedIndex - 1); setSelected(prev); }
           }}
         />
