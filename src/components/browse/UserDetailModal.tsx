@@ -224,7 +224,7 @@ export function UserDetailModal({ user, onClose, onNext, onPrev }: UserDetailMod
                 onClick={onPrev}
                 disabled={!onPrev}
                 title="Previous"
-                className="w-14 h-14 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-400 hover:border-red-300 hover:text-red-400 disabled:opacity-30 transition-colors"
+                className="w-14 h-14 rounded-full bg-red-400 flex items-center justify-center text-white shadow-lg hover:bg-red-500 disabled:opacity-30 transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
