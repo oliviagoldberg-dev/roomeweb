@@ -23,11 +23,13 @@ export function useConversations() {
           const otherUid = c.participants.find((p) => p !== uid);
           if (!otherUid || blockedSet.has(otherUid)) return null;
           const userData = await getUser(otherUid);
+          const isLiked = Array.isArray(userData?.likedBy) && userData.likedBy.includes(uid);
           return {
             ...c,
             otherUserUid: otherUid,
             otherUserName: userData?.name || userData?.username || "Unknown",
             otherUserPhoto: userData?.profileImageURL || "",
+            isLiked,
           };
         })
       );

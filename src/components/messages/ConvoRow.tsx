@@ -2,6 +2,7 @@
 import { Conversation } from "@/types/messages";
 import { Avatar } from "@/components/ui/Avatar";
 import { formatMessageTime } from "@/lib/utils/formatTime";
+import { Heart } from "lucide-react";
 
 interface ConvoRowProps {
   convo: Conversation;
@@ -28,9 +29,14 @@ export function ConvoRow({ convo, uid, onTap }: ConvoRowProps) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
-          <p className={`font-${hasUnread ? "bold" : "medium"} text-gray-900 truncate`}>
-            {convo.otherUserName ?? "Unknown"}
-          </p>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <p className={`font-${hasUnread ? "bold" : "medium"} text-gray-900 truncate`}>
+              {convo.otherUserName ?? "Unknown"}
+            </p>
+            {convo.isLiked && (
+              <Heart className="w-3.5 h-3.5 text-red-400 fill-red-400 flex-shrink-0" />
+            )}
+          </div>
           <span className={`text-xs flex-shrink-0 ml-2 ${hasUnread ? "text-roome-core" : "text-gray-400"}`}>
             {time}
           </span>

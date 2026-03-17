@@ -24,4 +24,5 @@ export interface Conversation {
   otherUserUid?: string;
   otherUserName?: string;
   otherUserPhoto?: string;
+  isLiked?: boolean;  // true if current user liked this person from browse
 }
