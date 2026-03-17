@@ -111,7 +111,7 @@ export default function BrowsePage() {
                 {others.length === 0 && dismissedIds.size > 0 && (
                   <button
                     onClick={() => setDismissedIds(new Set())}
-                    className="text-xs font-semibold text-[#38b6ff] border border-[#38b6ff] rounded-full px-3 py-1 hover:bg-[#38b6ff]/10 transition-colors"
+                    className="text-xs font-semibold text-[#38b6ff] bg-[#38b6ff]/15 border border-[#38b6ff] rounded-full px-3 py-1 hover:bg-[#38b6ff]/25 transition-colors"
                   >
                     Browse Again
                   </button>
@@ -151,7 +151,7 @@ export default function BrowsePage() {
                 {others.length === 0 && dismissedIds.size > 0 && (
                   <button
                     onClick={() => setDismissedIds(new Set())}
-                    className="text-xs font-semibold text-[#38b6ff] border border-[#38b6ff] rounded-full px-3 py-1 hover:bg-[#38b6ff]/10 transition-colors"
+                    className="text-xs font-semibold text-[#38b6ff] bg-[#38b6ff]/15 border border-[#38b6ff] rounded-full px-3 py-1 hover:bg-[#38b6ff]/25 transition-colors"
                   >
                     Browse Again
                   </button>
