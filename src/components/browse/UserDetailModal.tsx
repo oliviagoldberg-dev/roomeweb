@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import toast from "react-hot-toast";
 import * as Dialog from "@radix-ui/react-dialog";
 import { likeUser, ensureConversation, blockUser, reportUser } from "@/lib/firebase/firestore";
@@ -16,6 +16,8 @@ import { Heart, MessageSquare, PawPrint } from "lucide-react";
 interface UserDetailModalProps {
   user: RoommateUser;
   onClose: () => void;
+  onNext?: () => void;
+  onPrev?: () => void;
 }
 
 export function PhotoSwiper({ photos, name, heightClass = "h-64" }: { photos: string[]; name: string; heightClass?: string }) {
@@ -86,7 +88,7 @@ export function PhotoSwiper({ photos, name, heightClass = "h-64" }: { photos: st
   );
 }
 
-export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
+export function UserDetailModal({ user, onClose, onNext, onPrev }: UserDetailModalProps) {
   const { uid } = useAuthStore();
   const { canConnect } = useSubscription();
   const router = useRouter();
@@ -94,6 +96,7 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
   const [messaging, setMessaging] = useState(false);
   const [matchOpen, setMatchOpen] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
+  const touchStartX = useRef<number | null>(null);
 
   const photos = (user.photoURLs?.length ? user.photoURLs : user.profileImageURL ? [user.profileImageURL] : []);
 
@@ -176,7 +179,17 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
     <Dialog.Root open onOpenChange={(open) => { if (!open) onClose(); }}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-        <Dialog.Content className="fixed inset-x-4 top-[3%] bottom-[3%] sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-lg bg-white rounded-3xl z-50 overflow-y-auto shadow-2xl border-2 border-[#38b6ff]">
+        <Dialog.Content
+          className="fixed inset-x-4 top-[3%] bottom-[3%] sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-lg bg-white rounded-3xl z-50 overflow-y-auto shadow-2xl border-2 border-[#38b6ff]"
+          onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+          onTouchEnd={(e) => {
+            if (touchStartX.current === null) return;
+            const delta = touchStartX.current - e.changedTouches[0].clientX;
+            if (delta > 60) onNext?.();
+            else if (delta < -60) onPrev?.();
+            touchStartX.current = null;
+          }}
+        >
           <Dialog.Title className="sr-only">{user.name}</Dialog.Title>
           <div className="relative">
             <PhotoSwiper photos={photos} name={user.name} heightClass="h-80" />

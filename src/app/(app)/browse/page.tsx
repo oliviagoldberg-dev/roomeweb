@@ -22,6 +22,7 @@ export default function BrowsePage() {
   const { filters } = useUiStore();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [selected, setSelected] = useState<RoommateUser | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
   const filtered = users.filter((u) => {
     if (u.budgetMax < filters.budgetMin) return false;
@@ -34,6 +35,13 @@ export default function BrowsePage() {
 
   const friendIds = new Set(friendsInCity.map((f) => f.id));
   const others = filtered.filter((u) => !friendIds.has(u.id));
+  const allUsers = [...friendsInCity, ...others];
+
+  function openUser(user: RoommateUser) {
+    const idx = allUsers.findIndex((u) => u.id === user.id);
+    setSelectedIndex(idx >= 0 ? idx : 0);
+    setSelected(user);
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
@@ -74,7 +82,7 @@ export default function BrowsePage() {
                 <h2 className="text-sm font-bold uppercase tracking-widest text-[#38b6ff] mb-3">
                   Friends in your city
                 </h2>
-                <SwipeDeck users={friendsInCity} onCardClick={setSelected} />
+                <SwipeDeck users={friendsInCity} onCardClick={openUser} />
               </div>
             )}
             {others.length > 0 && (
@@ -84,7 +92,7 @@ export default function BrowsePage() {
                     Everyone
                   </h2>
                 )}
-                <SwipeDeck users={others} onCardClick={setSelected} />
+                <SwipeDeck users={others} onCardClick={openUser} />
               </div>
             )}
             {filtered.length === 0 && (
@@ -105,7 +113,7 @@ export default function BrowsePage() {
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {friendsInCity.map((u) => (
-                    <RoommateCard key={u.id} user={u} onClick={() => setSelected(u)} />
+                    <RoommateCard key={u.id} user={u} onClick={() => openUser(u)} />
                   ))}
                 </div>
               </section>
@@ -119,7 +127,7 @@ export default function BrowsePage() {
                 )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {others.map((u) => (
-                    <RoommateCard key={u.id} user={u} onClick={() => setSelected(u)} />
+                    <RoommateCard key={u.id} user={u} onClick={() => openUser(u)} />
                   ))}
                 </div>
               </section>
@@ -136,7 +144,18 @@ export default function BrowsePage() {
 
       <FiltersDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} />
       {selected && (
-        <UserDetailModal user={selected} onClose={() => setSelected(null)} />
+        <UserDetailModal
+          user={selected}
+          onClose={() => setSelected(null)}
+          onNext={() => {
+            const next = allUsers[selectedIndex + 1];
+            if (next) { setSelectedIndex(selectedIndex + 1); setSelected(next); }
+          }}
+          onPrev={() => {
+            const prev = allUsers[selectedIndex - 1];
+            if (prev) { setSelectedIndex(selectedIndex - 1); setSelected(prev); }
+          }}
+        />
       )}
     </div>
   );
