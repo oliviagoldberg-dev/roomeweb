@@ -103,23 +103,30 @@ export default function BrowsePage() {
                 <SwipeDeck users={friendsInCity} onCardClick={(u) => openUser(u, "friends")} />
               </div>
             )}
-            {others.length > 0 && (
-              <div>
-                {friendsInCity.length > 0 && (
-                  <h2 className="text-sm font-bold uppercase tracking-widest text-[#38b6ff] mb-3 mt-6">
-                    Everyone
-                  </h2>
+            <div className={friendsInCity.length > 0 ? "mt-6" : ""}>
+              <div className="flex items-center gap-3 mb-3">
+                <h2 className="text-sm font-bold uppercase tracking-widest text-[#38b6ff]">
+                  Everyone
+                </h2>
+                {others.length === 0 && dismissedIds.size > 0 && (
+                  <button
+                    onClick={() => setDismissedIds(new Set())}
+                    className="text-xs font-semibold text-[#38b6ff] border border-[#38b6ff] rounded-full px-3 py-1 hover:bg-[#38b6ff]/10 transition-colors"
+                  >
+                    Browse Again
+                  </button>
                 )}
+              </div>
+              {others.length > 0 ? (
                 <SwipeDeck users={others} onCardClick={(u) => openUser(u, "everyone")} />
-              </div>
-            )}
-            {filtered.length === 0 && (
-              <div className="text-center py-20 text-gray-400">
-                <Search className="w-10 h-10 mx-auto mb-3 text-gray-300" />
-                <p className="font-semibold">No roommates found</p>
-                <p className="text-sm">Try adjusting your filters</p>
-              </div>
-            )}
+              ) : filtered.length === 0 ? (
+                <div className="text-center py-20 text-gray-400">
+                  <Search className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                  <p className="font-semibold">No roommates found</p>
+                  <p className="text-sm">Try adjusting your filters</p>
+                </div>
+              ) : null}
+            </div>
           </div>
 
           {/* Desktop: grid */}
@@ -136,26 +143,34 @@ export default function BrowsePage() {
                 </div>
               </section>
             )}
-            {others.length > 0 ? (
-              <section>
-                {friendsInCity.length > 0 && (
-                  <h2 className="text-sm font-bold uppercase tracking-widest text-[#38b6ff] mb-3">
-                    Everyone
-                  </h2>
+            <section>
+              <div className="flex items-center gap-3 mb-3">
+                <h2 className="text-sm font-bold uppercase tracking-widest text-[#38b6ff]">
+                  Everyone
+                </h2>
+                {others.length === 0 && dismissedIds.size > 0 && (
+                  <button
+                    onClick={() => setDismissedIds(new Set())}
+                    className="text-xs font-semibold text-[#38b6ff] border border-[#38b6ff] rounded-full px-3 py-1 hover:bg-[#38b6ff]/10 transition-colors"
+                  >
+                    Browse Again
+                  </button>
                 )}
+              </div>
+              {others.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {others.map((u) => (
                     <RoommateCard key={u.id} user={u} onClick={() => openUser(u, "everyone")} />
                   ))}
                 </div>
-              </section>
-            ) : friendsInCity.length === 0 ? (
-              <div className="text-center py-20 text-gray-400">
-                <Search className="w-10 h-10 mx-auto mb-3 text-gray-300" />
-                <p className="font-semibold">No roommates found</p>
-                <p className="text-sm">Try adjusting your filters</p>
-              </div>
-            ) : null}
+              ) : filtered.length === 0 ? (
+                <div className="text-center py-20 text-gray-400">
+                  <Search className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                  <p className="font-semibold">No roommates found</p>
+                  <p className="text-sm">Try adjusting your filters</p>
+                </div>
+              ) : null}
+            </section>
           </div>
         </>
       )}
