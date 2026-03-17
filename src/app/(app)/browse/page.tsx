@@ -6,6 +6,7 @@ import { useFriendsInCity } from "@/hooks/useFriendsInCity";
 import { useAuthStore } from "@/store/authStore";
 import { useUiStore } from "@/store/uiStore";
 import { RoommateCard } from "@/components/browse/RoommateCard";
+import { SwipeDeck } from "@/components/browse/SwipeDeck";
 import { FiltersDrawer } from "@/components/browse/FiltersDrawer";
 import { UserDetailModal } from "@/components/browse/UserDetailModal";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -65,41 +66,72 @@ export default function BrowsePage() {
       {loading ? (
         <div className="flex justify-center pt-20"><LoadingSpinner /></div>
       ) : (
-        <div className="space-y-8">
-          {friendsInCity.length > 0 && (
-            <section>
-              <h2 className="text-sm font-bold uppercase tracking-widest text-[#38b6ff] mb-3">
-                Friends in your city
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {friendsInCity.map((u) => (
-                  <RoommateCard key={u.id} user={u} onClick={() => setSelected(u)} />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {others.length > 0 ? (
-            <section>
-              {friendsInCity.length > 0 && (
+        <>
+          {/* Mobile: swipe deck */}
+          <div className="sm:hidden">
+            {friendsInCity.length > 0 && (
+              <div className="mb-4">
                 <h2 className="text-sm font-bold uppercase tracking-widest text-[#38b6ff] mb-3">
-                  Everyone
+                  Friends in your city
                 </h2>
-              )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {others.map((u) => (
-                  <RoommateCard key={u.id} user={u} onClick={() => setSelected(u)} />
-                ))}
+                <SwipeDeck users={friendsInCity} onCardClick={setSelected} />
               </div>
-            </section>
-          ) : friendsInCity.length === 0 ? (
-            <div className="text-center py-20 text-gray-400">
-              <Search className="w-10 h-10 mx-auto mb-3 text-gray-300" />
-              <p className="font-semibold">No roommates found</p>
-              <p className="text-sm">Try adjusting your filters</p>
-            </div>
-          ) : null}
-        </div>
+            )}
+            {others.length > 0 && (
+              <div>
+                {friendsInCity.length > 0 && (
+                  <h2 className="text-sm font-bold uppercase tracking-widest text-[#38b6ff] mb-3 mt-6">
+                    Everyone
+                  </h2>
+                )}
+                <SwipeDeck users={others} onCardClick={setSelected} />
+              </div>
+            )}
+            {filtered.length === 0 && (
+              <div className="text-center py-20 text-gray-400">
+                <Search className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                <p className="font-semibold">No roommates found</p>
+                <p className="text-sm">Try adjusting your filters</p>
+              </div>
+            )}
+          </div>
+
+          {/* Desktop: grid */}
+          <div className="hidden sm:block space-y-8">
+            {friendsInCity.length > 0 && (
+              <section>
+                <h2 className="text-sm font-bold uppercase tracking-widest text-[#38b6ff] mb-3">
+                  Friends in your city
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {friendsInCity.map((u) => (
+                    <RoommateCard key={u.id} user={u} onClick={() => setSelected(u)} />
+                  ))}
+                </div>
+              </section>
+            )}
+            {others.length > 0 ? (
+              <section>
+                {friendsInCity.length > 0 && (
+                  <h2 className="text-sm font-bold uppercase tracking-widest text-[#38b6ff] mb-3">
+                    Everyone
+                  </h2>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {others.map((u) => (
+                    <RoommateCard key={u.id} user={u} onClick={() => setSelected(u)} />
+                  ))}
+                </div>
+              </section>
+            ) : friendsInCity.length === 0 ? (
+              <div className="text-center py-20 text-gray-400">
+                <Search className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                <p className="font-semibold">No roommates found</p>
+                <p className="text-sm">Try adjusting your filters</p>
+              </div>
+            ) : null}
+          </div>
+        </>
       )}
 
       <FiltersDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} />
