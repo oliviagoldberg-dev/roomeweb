@@ -232,9 +232,9 @@ export function UserDetailModal({ user, onClose, onNext, onPrev }: UserDetailMod
                 onClick={onNext}
                 disabled={!onNext}
                 title="Next"
-                className="w-16 h-16 rounded-full bg-[#38b6ff] flex items-center justify-center text-white shadow-lg hover:bg-[#2ea6f0] disabled:opacity-30 transition-colors"
+                className="w-11 h-11 rounded-full bg-[#38b6ff] flex items-center justify-center text-white shadow-lg hover:bg-[#2ea6f0] disabled:opacity-30 transition-colors"
               >
-                <Star className="w-7 h-7" />
+                <Star className="w-5 h-5" />
               </button>
               <button
                 onClick={handleLike}
