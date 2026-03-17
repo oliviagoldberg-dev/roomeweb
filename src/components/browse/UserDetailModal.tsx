@@ -54,18 +54,15 @@ export function PhotoSwiper({ photos, name, heightClass = "h-64" }: { photos: st
         className="w-full h-full object-cover transition-opacity duration-200"
       />
 
-      {/* Gradient overlay at bottom for dots legibility */}
-      <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-black/40 to-transparent" />
-
-      {/* Dot indicators */}
+      {/* Dot indicators at TOP like Hinge */}
       {photos.length > 1 && (
-        <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
+        <div className="absolute top-3 left-3 right-3 flex gap-1">
           {photos.map((_, i) => (
             <button
               key={i}
               onClick={() => setIdx(i)}
-              className={`h-1.5 rounded-full transition-all duration-200 ${
-                i === idx ? "bg-white w-5" : "bg-white/50 w-1.5"
+              className={`h-1 flex-1 rounded-full transition-all duration-200 ${
+                i === idx ? "bg-white" : "bg-white/40"
               }`}
             />
           ))}
@@ -179,54 +176,46 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
     <Dialog.Root open onOpenChange={(open) => { if (!open) onClose(); }}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-        <Dialog.Content className="fixed inset-x-4 top-[5%] bottom-[5%] sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-lg bg-white rounded-3xl z-50 overflow-y-auto shadow-2xl">
+        <Dialog.Content className="fixed inset-x-4 top-[3%] bottom-[3%] sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-lg bg-white rounded-3xl z-50 overflow-y-auto shadow-2xl border-2 border-[#38b6ff]">
           <Dialog.Title className="sr-only">{user.name}</Dialog.Title>
           <div className="relative">
-            <PhotoSwiper photos={photos} name={user.name} />
+            <PhotoSwiper photos={photos} name={user.name} heightClass="h-80" />
             <Dialog.Close asChild>
-              <button className="absolute top-4 right-4 bg-white/80 rounded-full w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-white">
+              <button className="absolute top-4 right-4 bg-white rounded-full w-9 h-9 flex items-center justify-center text-gray-500 shadow-md hover:bg-gray-50">
                 ✕
               </button>
             </Dialog.Close>
           </div>
 
-          <div className="p-6 space-y-4">
+          <div className="p-6 space-y-5">
             <div>
-              <h2 className="text-2xl font-black">{user.name}{user.age ? `, ${user.age}` : ""}</h2>
-              {user.occupation && <p className="text-gray-500">{user.occupation}</p>}
+              <h2 className="text-3xl font-black">{user.name}{user.age ? `, ${user.age}` : ""}</h2>
+              {user.occupation && <p className="text-gray-500 mt-0.5">{user.occupation}</p>}
               {user.school && <p className="text-sm text-gray-400">{user.school}</p>}
             </div>
 
-            <div className="flex flex-wrap gap-1.5">
-              {user.city && <Badge color="blue">{user.city}</Badge>}
-              {user.neighborhood && <Badge color="gray">{user.neighborhood}</Badge>}
-              {user.hasPet && (
-                <Badge color="teal" className="inline-flex items-center gap-1">
-                  <PawPrint className="w-3.5 h-3.5" />
-                  Has a pet
-                </Badge>
-              )}
-            </div>
-
-            {user.bio && <p className="text-sm text-gray-700">{user.bio}</p>}
+            {user.bio && <p className="text-sm text-gray-700 leading-relaxed">{user.bio}</p>}
 
             <div className="grid grid-cols-2 gap-3 text-sm">
               {user.sleepSchedule && <Info label="Sleep" value={user.sleepSchedule} />}
               {user.workFromHome && <Info label="WFH" value={user.workFromHome} />}
               {user.leaseLength && <Info label="Lease" value={user.leaseLength} />}
+              {user.city && <Info label="City" value={user.city} />}
+              {user.hasPet && <Info label="Pets" value="Has a pet" />}
+              {user.neighborhood && <Info label="Neighborhood" value={user.neighborhood} />}
             </div>
 
-            <div className="flex gap-3 pt-2">
-              <Button variant="secondary" onClick={handleMessage} loading={messaging} className="flex-1 inline-flex items-center justify-center gap-2">
+            <div className="flex gap-3 pt-1">
+              <Button variant="secondary" onClick={handleMessage} loading={messaging} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full py-3 text-[#38b6ff] font-bold">
                 <MessageSquare className="w-4 h-4" />
                 Message
               </Button>
-              <Button onClick={handleLike} loading={liking} className="flex-1 inline-flex items-center justify-center gap-2">
+              <Button onClick={handleLike} loading={liking} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full py-3 bg-[#38b6ff] hover:bg-[#2ea6f0] font-bold">
                 <Heart className="w-4 h-4" />
                 Like
               </Button>
             </div>
-            <div className="flex items-center justify-between pt-2 text-xs">
+            <div className="flex items-center justify-between text-xs">
               <button onClick={handleReport} className="text-gray-400 hover:text-gray-600">Report</button>
               <button onClick={handleBlock} className="text-gray-400 hover:text-gray-600">Block</button>
             </div>
