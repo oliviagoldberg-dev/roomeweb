@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { PaywallModal } from "@/components/ui/PaywallModal";
 import { useRouter } from "next/navigation";
-import { Heart, MessageSquare, PawPrint } from "lucide-react";
+import { Heart, MessageSquare, PawPrint, X, Star } from "lucide-react";
 
 interface UserDetailModalProps {
   user: RoommateUser;
@@ -218,16 +218,38 @@ export function UserDetailModal({ user, onClose, onNext, onPrev }: UserDetailMod
               {user.neighborhood && <Info label="Neighborhood" value={user.neighborhood} />}
             </div>
 
-            <div className="flex gap-3 pt-1">
-              <Button variant="secondary" onClick={handleMessage} loading={messaging} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full py-3 text-[#38b6ff] font-bold">
-                <MessageSquare className="w-4 h-4" />
-                Message
-              </Button>
-              <Button onClick={handleLike} loading={liking} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full py-3 bg-[#38b6ff] hover:bg-[#2ea6f0] font-bold">
-                <Heart className="w-4 h-4" />
-                Like
-              </Button>
+            {/* Desktop nav buttons */}
+            <div className="flex items-center justify-center gap-4 pt-1">
+              <button
+                onClick={onPrev}
+                disabled={!onPrev}
+                title="Previous"
+                className="w-14 h-14 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-400 hover:border-red-300 hover:text-red-400 disabled:opacity-30 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <button
+                onClick={handleLike}
+                title="Like"
+                className="w-16 h-16 rounded-full bg-[#38b6ff] flex items-center justify-center text-white shadow-lg hover:bg-[#2ea6f0] transition-colors"
+              >
+                <Heart className="w-7 h-7" />
+              </button>
+              <button
+                onClick={onNext}
+                disabled={!onNext}
+                title="Next"
+                className="w-14 h-14 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-400 hover:border-yellow-400 hover:text-yellow-400 disabled:opacity-30 transition-colors"
+              >
+                <Star className="w-6 h-6" />
+              </button>
             </div>
+
+            {/* Message button */}
+            <Button variant="secondary" onClick={handleMessage} loading={messaging} className="w-full inline-flex items-center justify-center gap-2 rounded-full py-3 text-[#38b6ff] font-bold">
+              <MessageSquare className="w-4 h-4" />
+              Message
+            </Button>
             <div className="flex items-center justify-between text-xs">
               <button onClick={handleReport} className="text-gray-400 hover:text-gray-600">Report</button>
               <button onClick={handleBlock} className="text-gray-400 hover:text-gray-600">Block</button>
