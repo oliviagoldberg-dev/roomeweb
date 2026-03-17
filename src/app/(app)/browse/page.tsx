@@ -82,7 +82,7 @@ export default function BrowsePage() {
           {others.length > 0 ? (
             <section>
               {friendsInCity.length > 0 && (
-                <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-3">
+                <h2 className="text-sm font-bold uppercase tracking-widest text-[#38b6ff] mb-3">
                   Everyone
                 </h2>
               )}
