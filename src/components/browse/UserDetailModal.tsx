@@ -229,19 +229,19 @@ export function UserDetailModal({ user, onClose, onNext, onPrev }: UserDetailMod
                 <X className="w-6 h-6" />
               </button>
               <button
-                onClick={handleLike}
-                title="Like"
-                className="w-16 h-16 rounded-full bg-[#38b6ff] flex items-center justify-center text-white shadow-lg hover:bg-[#2ea6f0] transition-colors"
-              >
-                <Heart className="w-7 h-7" />
-              </button>
-              <button
                 onClick={onNext}
                 disabled={!onNext}
                 title="Next"
-                className="w-14 h-14 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-400 hover:border-yellow-400 hover:text-yellow-400 disabled:opacity-30 transition-colors"
+                className="w-16 h-16 rounded-full bg-[#38b6ff] flex items-center justify-center text-white shadow-lg hover:bg-[#2ea6f0] disabled:opacity-30 transition-colors"
               >
-                <Star className="w-6 h-6" />
+                <Star className="w-7 h-7" />
+              </button>
+              <button
+                onClick={handleLike}
+                title="Like"
+                className="w-14 h-14 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-400 hover:border-pink-400 hover:text-pink-400 transition-colors"
+              >
+                <Heart className="w-6 h-6" />
               </button>
             </div>
 
