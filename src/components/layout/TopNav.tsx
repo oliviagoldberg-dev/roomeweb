@@ -9,8 +9,8 @@ import { Avatar } from "@/components/ui/Avatar";
 const NAV = [
   { href: "/home",          label: "Home" },
   { href: "/browse",        label: "Browse" },
-  { href: "/messages",      label: "Messages" },
   { href: "/likes",         label: "Likes" },
+  { href: "/messages",      label: "Messages" },
   { href: "/friends",       label: "Friends" },
   { href: "/notifications", label: "Notifications" },
   { href: "/profile",       label: "Profile" },

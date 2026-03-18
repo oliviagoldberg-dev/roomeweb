@@ -7,8 +7,8 @@ import { Home, Search, MessageSquare, Heart, Users, User } from "lucide-react";
 const TABS = [
   { href: "/home",     Icon: Home, label: "Home" },
   { href: "/browse",   Icon: Search, label: "Browse" },
-  { href: "/messages", Icon: MessageSquare, label: "Messages" },
   { href: "/likes",    Icon: Heart, label: "Likes" },
+  { href: "/messages", Icon: MessageSquare, label: "Messages" },
   { href: "/friends",  Icon: Users, label: "Friends" },
   { href: "/profile",  Icon: User, label: "Profile" },
 ];
