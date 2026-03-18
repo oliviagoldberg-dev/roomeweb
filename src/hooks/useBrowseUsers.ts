@@ -46,7 +46,7 @@ export function useBrowseUsers() {
       if (fofIds.size === 0) { setLoading(false); return; }
 
       const [{ data: profiles }, blocked] = await Promise.all([
-        supabase.from("profiles").select("*").in("id", Array.from(fofIds)).eq("onboardingComplete", true),
+        supabase.from("profiles").select("*").in("id", Array.from(fofIds)),
         listBlockedUsers(uidSafe),
       ]);
 
