@@ -106,7 +106,7 @@ export default function BrowsePage() {
             <div className={friendsInCity.length > 0 ? "mt-6" : ""}>
               <div className="flex items-center gap-3 mb-3">
                 <h2 className="text-sm font-bold uppercase tracking-widest text-[#38b6ff]">
-                  Everyone
+                  Mutual Connections
                 </h2>
                 {others.length === 0 && dismissedIds.size > 0 && (
                   <button
@@ -146,7 +146,7 @@ export default function BrowsePage() {
             <section>
               <div className="flex items-center gap-3 mb-3">
                 <h2 className="text-sm font-bold uppercase tracking-widest text-[#38b6ff]">
-                  Everyone
+                  Mutual Connections
                 </h2>
                 {others.length === 0 && dismissedIds.size > 0 && (
                   <button
