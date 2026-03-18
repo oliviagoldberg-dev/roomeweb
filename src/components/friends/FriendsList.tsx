@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useFriends } from "@/hooks/useFriends";
 import { useFriendRequests } from "@/hooks/useFriendRequests";
@@ -28,6 +29,7 @@ interface UserResult {
 }
 
 export function FriendsList() {
+  const router = useRouter();
   const { uid } = useAuthStore();
   const { user } = useCurrentUser();
   const { friends, loading } = useFriends();
@@ -237,6 +239,7 @@ export function FriendsList() {
                       if (!confirm(`Remove ${f.name || f.username} from friends?`)) return;
                       await removeFriend(uid, f.id);
                       toast.success(`${f.name || f.username} removed`);
+                      router.refresh();
                     }}
                     className="text-gray-300 hover:text-red-400 transition-colors p-1"
                     aria-label="Remove friend"
