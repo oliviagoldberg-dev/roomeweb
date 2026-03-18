@@ -257,8 +257,8 @@ export function UserDetailModal({ user, onClose, onDismiss, onNext, onPrev }: Us
             </div>
 
             <div className="flex items-center justify-between text-xs">
-              <button onClick={handleReport} className="text-gray-400 hover:text-gray-600">Report</button>
-              <button onClick={handleBlock} className="text-gray-400 hover:text-gray-600">Block</button>
+              <button onClick={handleReport} className="text-gray-400 hover:text-red-500 transition-colors">Report</button>
+              <button onClick={handleBlock} className="text-gray-400 hover:text-red-500 transition-colors">Block</button>
             </div>
           </div>
         </Dialog.Content>
