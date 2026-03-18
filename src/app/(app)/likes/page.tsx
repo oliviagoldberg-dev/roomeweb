@@ -95,7 +95,6 @@ export default function LikesPage() {
                   {user.name}{user.age ? `, ${user.age}` : ""}
                 </p>
                 {user.occupation && <p className="text-sm text-gray-500 mt-0.5">{user.occupation}</p>}
-                {user.bio && <p className="text-sm text-gray-600 mt-1.5 line-clamp-3">{user.bio}</p>}
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {user.city && <Badge color="blue">{user.city}</Badge>}
                   {user.hasPet && (

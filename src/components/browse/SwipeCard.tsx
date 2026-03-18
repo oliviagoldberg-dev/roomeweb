@@ -93,7 +93,7 @@ export function SwipeCard({ user, onSwipeLeft, onSwipeRight, onClick, index }: S
             <p className="text-xl font-black text-gray-900">{user.name}{user.age ? `, ${user.age}` : ""}</p>
             {user.occupation && <p className="text-sm text-gray-500">{user.occupation}</p>}
           </div>
-          {user.bio && <p className="text-sm text-gray-600 line-clamp-3">{user.bio}</p>}
+
           <div className="flex flex-wrap gap-1.5">
             {user.city && <Badge color="blue">{user.city}</Badge>}
             {user.hasPet && (
