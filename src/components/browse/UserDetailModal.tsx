@@ -256,11 +256,6 @@ export function UserDetailModal({ user, onClose, onDismiss, onNext, onPrev }: Us
               </button>
             </div>
 
-            {/* Message button */}
-            <Button variant="secondary" onClick={handleMessage} loading={messaging} className="w-full inline-flex items-center justify-center gap-2 rounded-full py-3 text-[#38b6ff] font-bold">
-              <MessageSquare className="w-4 h-4" />
-              Message
-            </Button>
             <div className="flex items-center justify-between text-xs">
               <button onClick={handleReport} className="text-gray-400 hover:text-gray-600">Report</button>
               <button onClick={handleBlock} className="text-gray-400 hover:text-gray-600">Block</button>
