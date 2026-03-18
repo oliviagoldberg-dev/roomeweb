@@ -31,6 +31,9 @@ export function RoommateCard({ user, onClick }: RoommateCardProps) {
             Has a pet
           </Badge>
         )}
+        {user.neighborhoodPreferences?.slice(0, 2).map((n) => (
+          <Badge key={n} color="gray">{n}</Badge>
+        ))}
       </div>
     </button>
   );

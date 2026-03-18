@@ -106,6 +106,9 @@ export default function LikesPage() {
                   {user.budgetMin && user.budgetMax && (
                     <Badge color="gray">${user.budgetMin.toLocaleString()}–${user.budgetMax.toLocaleString()}/mo</Badge>
                   )}
+                  {user.neighborhoodPreferences?.slice(0, 2).map((n) => (
+                    <Badge key={n} color="gray">{n}</Badge>
+                  ))}
                 </div>
               </div>
               <div className="flex flex-col gap-2 flex-shrink-0">

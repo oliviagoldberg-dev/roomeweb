@@ -219,6 +219,17 @@ export function UserDetailModal({ user, onClose, onDismiss, onNext, onPrev }: Us
               {user.neighborhood && <Info label="Neighborhood" value={user.neighborhood} />}
             </div>
 
+            {user.neighborhoodPreferences && user.neighborhoodPreferences.length > 0 && (
+              <div>
+                <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide font-medium">Interested in</p>
+                <div className="flex flex-wrap gap-2">
+                  {user.neighborhoodPreferences.map((n) => (
+                    <span key={n} className="bg-[#38b6ff]/10 text-[#38b6ff] text-xs font-medium px-3 py-1 rounded-full">{n}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Desktop nav buttons */}
             <div className="flex items-center justify-center gap-4 pt-1">
               <button
