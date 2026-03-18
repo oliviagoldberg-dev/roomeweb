@@ -27,11 +27,12 @@ export function useBrowseUsers() {
 
       if (myFriendIds.size === 0) { setLoading(false); return; }
 
-      // Get friends-of-friends
+      // Get friends-of-friends — query friendships containing any of my friends
+      const orFilter = Array.from(myFriendIds).map((id) => `users.cs.{${id}}`).join(",");
       const { data: fofFriendships } = await supabase
         .from("friendships")
         .select("users")
-        .overlaps("users", Array.from(myFriendIds));
+        .or(orFilter);
 
       const fofIds = new Set<string>();
       for (const row of fofFriendships ?? []) {
