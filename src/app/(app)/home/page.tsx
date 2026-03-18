@@ -5,10 +5,10 @@ import Link from "next/link";
 import {
   Search,
   MessageSquare,
+  Heart,
   Users,
   User,
   Bell,
-  DollarSign,
 } from "lucide-react";
 import { RoomeWordmark } from "@/components/ui/Wordmark";
 
@@ -36,6 +36,7 @@ export default function HomePage() {
         {[
           { href: "/browse",        Icon: Search,        title: "Browse",        desc: "Find your roommate" },
           { href: "/messages",      Icon: MessageSquare, title: "Messages",      desc: "Chat with your connections" },
+          { href: "/likes",         Icon: Heart,         title: "Likes",         desc: "See who liked your profile" },
           { href: "/friends",       Icon: Users,         title: "Friends",       desc: "Grow your network" },
           { href: "/notifications", Icon: Bell,          title: "Notifications", desc: "See updates and alerts" },
           { href: "/profile",       Icon: User,          title: "Profile",       desc: "Manage your profile" },
@@ -50,15 +51,6 @@ export default function HomePage() {
             <p className="text-xs text-gray-500">{desc}</p>
           </Link>
         ))}
-        {user && (
-          <div className="bg-white rounded-2xl p-5 shadow-sm flex flex-col gap-2">
-            <DollarSign className="w-6 h-6 text-roome-core" />
-            <p className="font-bold text-gray-900">Your budget</p>
-            <p className="text-xs text-gray-500">
-              ${user.budgetMin?.toLocaleString()} – ${user.budgetMax?.toLocaleString()}/mo
-            </p>
-          </div>
-        )}
       </div>
 
 
