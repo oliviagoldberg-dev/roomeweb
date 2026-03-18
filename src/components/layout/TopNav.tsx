@@ -20,7 +20,7 @@ export function TopNav() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-30 bg-roome-offwhite border-b border-gray-200">
+    <header className="sticky top-0 z-30 bg-white border-b border-gray-200">
       <div className="h-14 flex items-center px-4 gap-3">
         <Link href="/home" className="font-black text-xl font-heading text-roome-black flex items-center">
           <RoomeWordmark className="text-xl" />
