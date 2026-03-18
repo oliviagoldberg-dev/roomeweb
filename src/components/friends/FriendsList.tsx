@@ -10,6 +10,7 @@ import {
   sendFriendRequest,
   acceptFriendRequest,
   declineFriendRequest,
+  removeFriend,
 } from "@/lib/firebase/firestore";
 import { supabase } from "@/lib/supabase/client";
 import { FriendRequestCard } from "./FriendRequestCard";
@@ -17,7 +18,7 @@ import { InviteModal } from "./InviteModal";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { Search, UserPlus } from "lucide-react";
+import { Search, UserPlus, UserMinus } from "lucide-react";
 
 interface UserResult {
   id: string;
@@ -226,10 +227,22 @@ export function FriendsList() {
               {friends.map((f) => (
                 <div key={f.id} className="flex items-center gap-3 p-4">
                   <Avatar src={f.profileImageURL} name={f.name} size={52} />
-                  <div>
+                  <div className="flex-1">
                     <p className="font-semibold text-black">{f.name || f.username}</p>
                     <p className="text-sm text-black">{f.occupation || f.username}</p>
                   </div>
+                  <button
+                    onClick={async () => {
+                      if (!uid) return;
+                      if (!confirm(`Remove ${f.name || f.username} from friends?`)) return;
+                      await removeFriend(uid, f.id);
+                      toast.success(`${f.name || f.username} removed`);
+                    }}
+                    className="text-gray-300 hover:text-red-400 transition-colors p-1"
+                    aria-label="Remove friend"
+                  >
+                    <UserMinus className="w-5 h-5" />
+                  </button>
                 </div>
               ))}
             </div>

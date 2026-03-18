@@ -22,7 +22,7 @@ export function RoommateCard({ user, onClick }: RoommateCardProps) {
           <p className="text-sm text-gray-500 line-clamp-1">{user.occupation}</p>
         </div>
       </div>
-      {user.bio && <p className="text-sm text-gray-600 line-clamp-2 mb-3">{user.bio}</p>}
+      {user.bio && <p className="text-sm text-gray-600 line-clamp-4 mb-3">{user.bio}</p>}
       <div className="flex flex-wrap gap-1.5">
         {user.city && <Badge color="blue">{user.city}</Badge>}
         {user.hasPet && (

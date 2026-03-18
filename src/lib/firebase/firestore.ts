@@ -429,6 +429,10 @@ export async function declineFriendRequest(requestId: string) {
   await supabase.from("friendrequests").update({ status: "declined" }).eq("id", requestId);
 }
 
+export async function removeFriend(myUid: string, friendUid: string) {
+  await supabase.from("friendships").delete().contains("users", [myUid, friendUid]);
+}
+
 // ─── Invite Codes ─────────────────────────────────────────────────────────────
 
 export async function getOrCreateInviteCode(uid: string): Promise<string> {
