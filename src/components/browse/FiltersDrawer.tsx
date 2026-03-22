@@ -34,18 +34,18 @@ export function FiltersDrawer({ open, onClose }: FiltersDrawerProps) {
                 <span>${filters.budgetMax}</span>
               </div>
               <label className="text-xs text-gray-400">Min</label>
-              <input type="range" min={0} max={5000} step={50}
+              <input type="range" min={0} max={10000} step={50}
                 value={filters.budgetMin}
                 onChange={(e) => setFilters({ budgetMin: Number(e.target.value) })}
                 className="w-full rounded-full"
-                style={{ background: sliderFill(filters.budgetMin, 0, 5000) }}
+                style={{ background: sliderFill(filters.budgetMin, 0, 10000) }}
               />
               <label className="text-xs text-gray-400">Max</label>
-              <input type="range" min={0} max={5000} step={50}
+              <input type="range" min={0} max={10000} step={50}
                 value={filters.budgetMax}
                 onChange={(e) => setFilters({ budgetMax: Number(e.target.value) })}
                 className="w-full rounded-full"
-                style={{ background: sliderFill(filters.budgetMax, 0, 5000) }}
+                style={{ background: sliderFill(filters.budgetMax, 0, 10000) }}
               />
             </div>
 

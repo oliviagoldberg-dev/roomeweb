@@ -9,7 +9,7 @@ export interface BrowseFilters {
 
 export const DEFAULT_FILTERS: BrowseFilters = {
   budgetMin: 0,
-  budgetMax: 5000,
+  budgetMax: 10000,
   hasPet: null,
   cleanliness: null,
   sleepSchedule: null,
