@@ -12,6 +12,16 @@ export async function POST(req: Request) {
 
     const uid = user.id;
 
+    // Get the current user's target city
+    const { data: myProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("city, moveCity")
+      .eq("id", uid)
+      .single();
+
+    const myCity = myProfile?.moveCity || myProfile?.city;
+    if (!myCity) return NextResponse.json({ users: [] });
+
     // Get my direct friends
     const { data: myFriendships } = await supabaseAdmin
       .from("friendships")
@@ -42,12 +52,19 @@ export async function POST(req: Request) {
 
     if (fofIds.size === 0) return NextResponse.json({ users: [] });
 
-    const { data: profiles } = await supabaseAdmin
-      .from("profiles")
-      .select("*")
-      .in("id", Array.from(fofIds));
+    // Fetch FOF profiles that match the current user's target city
+    const [{ data: byMoveCity }, { data: byCity }] = await Promise.all([
+      supabaseAdmin.from("profiles").select("*").in("id", Array.from(fofIds)).eq("moveCity", myCity),
+      supabaseAdmin.from("profiles").select("*").in("id", Array.from(fofIds)).eq("city", myCity),
+    ]);
 
-    return NextResponse.json({ users: profiles ?? [] });
+    const seen = new Set<string>();
+    const profiles: any[] = [];
+    for (const row of [...(byMoveCity ?? []), ...(byCity ?? [])]) {
+      if (!seen.has(row.id)) { seen.add(row.id); profiles.push(row); }
+    }
+
+    return NextResponse.json({ users: profiles });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message ?? "Failed" }, { status: 500 });
   }
